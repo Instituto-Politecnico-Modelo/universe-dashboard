@@ -1,3 +1,5 @@
+import Floorplan from "@/components/Floorplan";
+import OccupancyLineChart from "@/components/OccupancyLineChart";
 import Image from "next/image";
 
 export default function Home() {
@@ -108,6 +110,8 @@ export default function Home() {
           </p>
         </a>
       </div>
+      <OccupancyLineChart />
+      <Floorplan />
     </main>
   );
 }
