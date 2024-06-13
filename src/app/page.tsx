@@ -1,5 +1,8 @@
+import CubeGrid from "@/components/CubeGrid";
 import Floorplan from "@/components/Floorplan";
 import OccupancyLineChart from "@/components/OccupancyLineChart";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import Image from "next/image";
 
 export default function Home() {
@@ -112,6 +115,7 @@ export default function Home() {
       </div>
       <OccupancyLineChart />
       <Floorplan />
+       <CubeGrid width={3} height={3} depth={3}/>
     </main>
   );
 }
