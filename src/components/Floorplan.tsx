@@ -20,8 +20,16 @@ function Floorplan(props: object){
     
         // add a cube mesh at  0,0,0
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+        mesh.name = "cube";
     
+        const patioArea = scene.getObjectByName("patio_area");
+        if (patioArea) {
+            const patioAreaMesh = patioArea as THREE.Mesh;
+            patioAreaMesh.material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 });
+
+        }
         scene.add(mesh);
+
         
         return <primitive object={scene} {...props} />;
     }
