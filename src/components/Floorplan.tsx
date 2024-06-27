@@ -5,11 +5,11 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useState } from "react";
 import * as THREE from "three";
 
-function Floorplan(props: object){
+function Floorplan({data, ...props}: {data: Map<string, number>, props?: object}){
 
     const [hovered, setHovered] = useState(false);
 
-    function MeshComponent(props: object) {
+    function MeshComponent(props?: object) {
         const { scene } = useGLTF('/scene.gltf');
 
         // rotate
@@ -17,7 +17,31 @@ function Floorplan(props: object){
             if (!hovered)
                 (scene.rotation.y += Math.sin(delta) * (Math.PI / 8))
         });
+
+        const setAreaColorByOccupancy = (areaName: string, occupancy: number) => {
+            const area = scene.getObjectByName(areaName + "_area");
+            if (area) {
+                const areaMesh = area as THREE.Mesh;
+                // change between shades of green, yellow, and red based on the occupancy
+                // the color should be more intense as the occupancy increases
+                const color = new THREE.Color(0x00ff00);
+                if (occupancy <= 50) {
+                    // green to yellow
+                    color.setRGB(0, 1, 0);
+                } else if (occupancy <= 75) {
+                    color.setRGB(1, 1, 0);
+                } else {
+                    color.setRGB(1, 0, 0);
+                }
+                areaMesh.material = new THREE.MeshBasicMaterial({ color: color.getHex(), transparent: true, opacity: 0.5 });
+            }
+        }
+
+        data.forEach((value, key) => {
+            setAreaColorByOccupancy(key, value);
+        });
     
+        /*
         // add a cube mesh at  0,0,0
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
         mesh.name = "cube";
@@ -29,8 +53,8 @@ function Floorplan(props: object){
 
         }
         scene.add(mesh);
+        */
 
-        
         return <primitive object={scene} {...props} />;
     }
 
