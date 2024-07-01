@@ -40,6 +40,15 @@ function Floorplan({data, ...props}: {data: Map<string, number>, props?: object}
         data.forEach((value, key) => {
             setAreaColorByOccupancy(key, value);
         });
+
+        // find "camera" object and use it as the camera
+        const camera = scene.getObjectByName("PerspectiveCamera");
+        if (camera) {
+            console.log("camera found")
+            const cameraObject = camera as THREE.PerspectiveCamera;
+            cameraObject.aspect = window.innerWidth / window.innerHeight;
+            cameraObject.updateProjectionMatrix();
+        }
     
         /*
         // add a cube mesh at  0,0,0

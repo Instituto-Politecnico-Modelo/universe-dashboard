@@ -15,7 +15,7 @@ export default function Home() {
   ]));
   return (
     <main className="flex min-h-screen justify-center flex-col items-center p-24">
-      <div className="flex  items-center">
+      <div>
       <OccupancyLineChart data={currentOccupancyData} />
       <Floorplan data={currentOccupancyData} />
       </div>
