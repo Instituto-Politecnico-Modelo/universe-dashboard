@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import { Account, User as AuthUser } from "next-auth";
-import GithubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt-ts";
 import User from "@/models/User";
@@ -33,12 +32,7 @@ export const authOptions: any = {
           throw new Error(err);
         }
       },
-    }),
-    GithubProvider({
-      clientId: process.env.GITHUB_ID ?? "",
-      clientSecret: process.env.GITHUB_SECRET ?? "",
-    }),
-    // ...add more providers here
+    })
   ],
   callbacks: {
     async signIn({ user, account }: { user: AuthUser; account: Account }) {

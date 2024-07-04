@@ -2,10 +2,8 @@
 import CubeGrid from "@/components/CubeGrid";
 import Floorplan from "@/components/Floorplan";
 import OccupancyLineChart from "@/components/OccupancyLineChart";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
-import Image from "next/image";
 import { useState } from "react";
+
 
 export default function Home() {
   const [currentOccupancyData, setCurrentOccupancyData] = useState<Map<string, number>>(new Map([
