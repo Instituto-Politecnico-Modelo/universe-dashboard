@@ -10,8 +10,8 @@ import { useState } from "react";
 export default function Home() {
   const [currentOccupancyData, setCurrentOccupancyData] = useState<Map<string, number>>(new Map([
     ["patio", 50],
-    ["labo 1", 20],
-    ["labo 2", 30],
+    ["labo1", 20],
+    ["labo2", 30],
   ]));
   return (
     <main className="flex min-h-screen justify-center flex-col items-center p-24">
