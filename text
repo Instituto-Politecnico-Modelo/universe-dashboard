@@ -7,7 +7,6 @@
     <script>
         var camaras = [];
         function getCamaras(){
-            console.log("getCamaras")
             fetch('http://localhost:8080/api/v1/camaras')
             .then(response => response.json())
             .then(data => {
