@@ -6,13 +6,15 @@ import { useSession, signOut } from "next-auth/react";
 import * as Form from '@radix-ui/react-form';
 import { any } from "three/examples/jsm/nodes/Nodes.js";
 import { get } from "http";
+import { Api } from "@/services/api";
 
 function Dashboard() {
   const camaras = [];
-  const camara = {name: '', url: '', location: '', threshold: ''};
   const sessionData = useSession();
   sessionData.status === "unauthenticated" && redirect("/login");
   console.log(sessionData);
+  const api = new Api();
+  
 
   function getCameras(){
     fetch('http://localhost:8080/api/v1/camaras')
@@ -26,7 +28,6 @@ function Dashboard() {
       });
       table += '</table>';
       document.body.innerHTML += table;
-      
     });
   }
 
