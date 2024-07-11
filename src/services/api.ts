@@ -278,7 +278,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/camaras
      */
     camarasList: (params: RequestParams = {}) =>
-      this.request<TypesCamara[][], any>({
+      this.request<TypesCamara[], any>({
         path: `/camaras`,
         method: 'GET',
         format: 'json',
