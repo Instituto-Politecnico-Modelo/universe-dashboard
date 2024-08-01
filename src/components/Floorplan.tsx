@@ -1,29 +1,78 @@
-"use client";
+'use client';
+import { calculateGradientFromValue } from '@/services/utils';
+import { OrbitControls, PerspectiveCamera, useGLTF } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useEffect, useState } from 'react';
+import * as THREE from 'three';
 
-import { OrbitControls, PerspectiveCamera, useGLTF } from "@react-three/drei";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useState } from "react";
-import * as THREE from "three";
+function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Map<string, number>; props?: object }) {
+    const { scene } = useGLTF('/scene.gltf');
 
-function Floorplan({data, ...props}: {data: Map<string, number>, props?: object}){
+    // rotate
+    useFrame((state, delta) => {
+        if (!hovered) scene.rotation.y += Math.sin(delta) * (Math.PI / 8);
+    });
 
-    const [hovered, setHovered] = useState(false);
+    const setAreaColorByOccupancy = (areaName: string, occupancy: number) => {
+        const area = scene.getObjectByName(areaName + '_dec');
+        if (area) {
+            const areaMesh = area as THREE.Mesh;
+            // change between shades of green, yellow, and red based on the occupancy
+            // the color should be more intense as the occupancy increases
+            const color = new THREE.Color(0x00ff00);
+            if (occupancy <= 50) {
+                // green to yellow
+                color.setRGB(0, 1, 0);
+            } else if (occupancy <= 75) {
+                color.setRGB(1, 1, 0);
+            } else {
+                color.setRGB(1, 0, 0);
+            }
+            areaMesh.material = new THREE.MeshBasicMaterial({
+                color: color.getHex(),
+                transparent: true,
+                opacity: 0.5,
+            });
+        }
+    };
 
-    function MeshComponent(props?: object) {
-        const { scene } = useGLTF('/scene.gltf');
+    const setCubesByOccupancy = (areaName: string, occupancy: number) => {
+        const area = scene.getObjectByName(areaName + '_dec');
+        const center = scene.getObjectByName(areaName + '_cubo_central') as THREE.Mesh;
+        const frame = scene.getObjectByName(areaName + '_f') as THREE.Mesh;
+        if (!area || !center || !frame) {
+            return;
+        }
+        const cubeGroup = scene.getObjectByName(areaName + '_cubos') as THREE.Group;
+        if (!cubeGroup) {
+            return;
+        }
 
-        // rotate
-        useFrame((state, delta) => {
-            if (!hovered)
-                (scene.rotation.y += Math.sin(delta) * (Math.PI / 8))
+        // calculate max distance of frame to center
+        const frameGeometry = frame.geometry as THREE.BufferGeometry;
+        const frameVertices = frameGeometry.attributes.position.array;
+        let maxDistance = 0;
+        for (let i = 0; i < frameVertices.length; i += 3) {
+            const x = frameVertices[i];
+            const y = frameVertices[i + 1];
+            const z = frameVertices[i + 2];
+            const distance = Math.sqrt(x * x + y * y + z * z);
+            if (distance > maxDistance) {
+                maxDistance = distance;
+            }
+        }
+
+        // change material, they all use the same one
+        const cubeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
         });
 
-        const setAreaColorByOccupancy = (areaName: string, occupancy: number) => {
-            const area = scene.getObjectByName(areaName + "_area");
-            if (area) {
-                const areaMesh = area as THREE.Mesh;
+        cubeGroup.children.forEach((cube) => {
+            const cubeMesh = cube as THREE.Mesh;
+            /*
                 // change between shades of green, yellow, and red based on the occupancy
                 // the color should be more intense as the occupancy increases
+
                 const color = new THREE.Color(0x00ff00);
                 if (occupancy <= 50) {
                     // green to yellow
@@ -33,57 +82,71 @@ function Floorplan({data, ...props}: {data: Map<string, number>, props?: object}
                 } else {
                     color.setRGB(1, 0, 0);
                 }
-                areaMesh.material = new THREE.MeshBasicMaterial({ color: color.getHex(), transparent: true, opacity: 0.5 });
-            }
-        }
+                cubeMesh.material = cubeMaterial;
+                */
+            // change scale based on occupancy ( max scale is 0.483) depending on distance to center
+            const distanceToCenter = center.position.distanceTo(cubeMesh.position);
+            // get the most distant point of the frame to the center as a reference
+            // the closer to the center, the bigger the scale
+            const scale = ((1 - distanceToCenter / maxDistance) * 0.483 * occupancy) / 20;
+            cubeMesh.scale.set(scale, scale, scale);
 
-        data.forEach((value, key) => {
-            setAreaColorByOccupancy(key, value);
+            // change color based on occupancy and scale
+            const hexColor = calculateGradientFromValue(scale, 0, 0.4, [0x00ff00, 0xccff00, 0xff0000]);
+
+            const color = new THREE.Color(hexColor);
+
+            cubeMesh.material = new THREE.MeshBasicMaterial({
+                color: color.getHex(),
+            });
         });
+    };
 
-        // find "camera" object and use it as the camera
-        const camera = scene.getObjectByName("PerspectiveCamera");
-        if (camera) {
-            console.log("camera found")
-            const cameraObject = camera as THREE.PerspectiveCamera;
-            cameraObject.aspect = window.innerWidth / window.innerHeight;
-            cameraObject.updateProjectionMatrix();
-        }
-    
-        /*
-        // add a cube mesh at  0,0,0
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
-        mesh.name = "cube";
-    
-        const patioArea = scene.getObjectByName("patio_area");
-        if (patioArea) {
-            const patioAreaMesh = patioArea as THREE.Mesh;
-            patioAreaMesh.material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 });
+    useEffect(() => {
+        data.forEach((value, key) => {
+            console.log(key, value);
+            // setAreaColorByOccupancy(key, value);
+            setCubesByOccupancy(key, value);
+        });
+    }, [...data.keys()]);
 
-        }
-        scene.add(mesh);
-        */
-
-        return <primitive object={scene} {...props} />;
+    // find "camera" object and use it as the camera
+    const camera = scene.getObjectByName('PerspectiveCamera');
+    if (camera) {
+        console.log('camera found');
+        const cameraObject = camera as THREE.PerspectiveCamera;
+        cameraObject.aspect = window.innerWidth / window.innerHeight;
+        cameraObject.updateProjectionMatrix();
     }
 
-    function handleMouseEnter() {
-        setHovered(true);
-    }
+    /*
+    // add a cube mesh at  0,0,0
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
+    mesh.name = "cube";
 
-    function handleMouseExit() {
-        setHovered(false);
-    }
+    const patioArea = scene.getObjectByName("patio_area");
+    if (patioArea) {
+        const patioAreaMesh = patioArea as THREE.Mesh;
+        patioAreaMesh.material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 });
 
-    return(
-        <div className="flex justify-center items-center h-screen w-screen">
-            <Canvas className="h-2xl w-2xl" onMouseEnter={handleMouseEnter} onMouseOut={handleMouseExit}>
+    }
+    scene.add(mesh);
+    */
+
+    return <primitive object={scene} {...props} />;
+}
+
+function Floorplan({ data, ...props }: { data: Map<string, number>; props?: object }) {
+    const [hovered, setHovered] = useState(false);
+
+    return (
+        <div className='flex justify-center items-center h-screen w-screen'>
+            <Canvas className='h-2xl w-2xl' onMouseEnter={() => setHovered(true)} onMouseOut={() => setHovered(false)}>
                 <OrbitControls />
-                <MeshComponent {...props} />
+                <MeshComponent hovered={hovered} data={data} />
             </Canvas>
         </div>
     );
-
 }
 
 export default Floorplan;
