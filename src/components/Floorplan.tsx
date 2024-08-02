@@ -1,11 +1,12 @@
 'use client';
+import { TypesData } from '@/services/dataApi';
 import { calculateGradientFromValue } from '@/services/utils';
 import { OrbitControls, PerspectiveCamera, useGLTF } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 
-function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Map<string, number>; props?: object }) {
+function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: TypesData[]; props?: object }) {
     const { scene } = useGLTF('/scene.gltf');
 
     // rotate
@@ -103,10 +104,10 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ma
     };
 
     useEffect(() => {
-        data.forEach((value, key) => {
-            console.log(key, value);
+        data.forEach(({location, cant}) => {
+            console.log(location, cant);
             // setAreaColorByOccupancy(key, value);
-            setCubesByOccupancy(key, value);
+            setCubesByOccupancy(location, cant);
         });
     }, [...data.keys()]);
 
@@ -136,7 +137,7 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ma
     return <primitive object={scene} {...props} />;
 }
 
-function Floorplan({ data, ...props }: { data: Map<string, number>; props?: object }) {
+function Floorplan({ data, ...props }: { data: TypesData[]; props?: object }) {
     const [hovered, setHovered] = useState(false);
 
     return (

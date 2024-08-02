@@ -5,9 +5,21 @@ import OccupancyLineChart from '@/components/OccupancyLineChart';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import Image from 'next/image';
-import { useState } from 'react';
+import { use, useEffect, useState } from 'react';
+import {Api, TypesData} from '@/services/dataApi';
 
 export default function Home() {
+    const [currentOccupancyData, setCurrentOccupancyData] = useState<TypesData[]>([]);
+    const client = new Api();
+    client.baseUrl = 'http://localhost:8080/api/v1';
+    useEffect(() => {
+        client.data.dataList().then((data) => {
+            if (typeof data === 'object') {
+                setCurrentOccupancyData(data);
+            }
+        });
+    }, []);
+    /*
     const [currentOccupancyData, setCurrentOccupancyData] = useState<Map<string, number>>(
         new Map([
             ['patio', 10],
@@ -19,7 +31,7 @@ export default function Home() {
             ['aula_6', 4],
             ['aula_8', 15],
         ]),
-    );
+    ); */
     return (
         <main className='flex min-h-screen justify-center flex-col items-center p-24'>
             <div>
