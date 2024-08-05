@@ -1,9 +1,11 @@
+'use client';
 import { Api } from "@/services/api";
 import { constants } from "@/utils/constants";
 import { FormEvent } from "react";
 
 export default function CameraForm(){
-    const api = new Api({baseUrl: constants.API_URL});
+    const api = new Api();
+    api.baseUrl = "/api/v1";
     
     async function addCamera(event: FormEvent<HTMLFormElement>){
         event.preventDefault();
@@ -14,7 +16,8 @@ export default function CameraForm(){
                 name: formData.get("name") as string,
                 location: formData.get("location") as string,
                 url: formData.get("url") as string,
-                threshold: Number(formData.get("threshold"))
+                threshold: Number(formData.get("threshold")),
+                id: ""
             });
 
             const data = await response;

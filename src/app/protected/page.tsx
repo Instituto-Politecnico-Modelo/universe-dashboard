@@ -1,12 +1,12 @@
 import { auth, signOut } from '@/app/auth';
-//import CameraTable  from "@/components/CameraTable";
-//import CameraForm from "@/components/CameraForm";
+import CameraTable  from "@/components/CameraTable";
+import CameraForm from "@/components/CameraForm";
 
 export default async function ProtectedPage() {
   let session = await auth();
 
   return (
-     <p>
+     <div>
         <nav className="bg-white border-gray-200 dark:bg-gray-900">
           <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
@@ -24,11 +24,12 @@ export default async function ProtectedPage() {
           </div>
         </nav>
         <h1 className="text-[15px] font-semibold ml-2 text-[35px] mt-3 font-medium leading-[35px] text-black">Camaras</h1>
-      
+        <CameraForm /> 
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
-        
+      <CameraTable />
       </div>
-    </p>
+      </div>
+    
   );
 }
 /* Faltan estos
