@@ -37,7 +37,7 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ty
         }
     };
 
-    const setCubesByOccupancy = (areaName: string, occupancy: number) => {
+    const setCubesByOccupancy = (areaName: string, occupancy: number, threshold: number) => {
         const area = scene.getObjectByName(areaName + '_dec');
         const center = scene.getObjectByName(areaName + '_cubo_central') as THREE.Mesh;
         const frame = scene.getObjectByName(areaName + '_f') as THREE.Mesh;
@@ -89,11 +89,29 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ty
             const distanceToCenter = center.position.distanceTo(cubeMesh.position);
             // get the most distant point of the frame to the center as a reference
             // the closer to the center, the bigger the scale
-            const scale = ((1 - distanceToCenter / maxDistance) * 0.483 * occupancy) / 20;
-            cubeMesh.scale.set(scale, scale, scale);
+            const scaledOcupancy = occupancy / threshold;
+            const minScale = 0.1;
+            const maxScale = 0.483;
+            const newScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
+            // set scale 
+//            cubeMesh.scale.set(newScale, newScale, newScale);
+            
+
+            // animate the change in scale from the old to the new
+            cube.onBeforeRender = (renderer, scene, camera, geometry, material, group) => {
+                const deltaScale = newScale - cubeMesh.scale.x;
+                const scaleSpeed = 0.05;
+                if (Math.abs(deltaScale) > 0.001) {
+                    const newScale = cubeMesh.scale.x + deltaScale * scaleSpeed; 
+                    cubeMesh.scale.set(newScale, newScale, newScale);
+                } else {
+                    // delete callback
+                    cube.onBeforeRender = () => {};
+                }
+            }
 
             // change color based on occupancy and scale
-            const hexColor = calculateGradientFromValue(scale, 0, 0.4, [0x00ff00, 0xccff00, 0xff0000]);
+            const hexColor = calculateGradientFromValue(newScale, 0, 0.483, [0x00ff00, 0xccff00, 0xff0000]);
 
             const color = new THREE.Color(hexColor);
 
@@ -104,12 +122,10 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ty
     };
 
     useEffect(() => {
-        data.forEach(({location, cant}) => {
-            console.log(location, cant);
-            // setAreaColorByOccupancy(key, value);
-            setCubesByOccupancy(location, cant);
+        data.forEach(({location, cant, threshold}) => {
+            setCubesByOccupancy(location, cant, threshold);
         });
-    }, [...data.keys()]);
+    }, [...data.values()]);
 
     // find "camera" object and use it as the camera
     const camera = scene.getObjectByName('PerspectiveCamera');
