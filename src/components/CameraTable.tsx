@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Api } from "@/services/api";
 import { constants } from "@/utils/constants";
+var primeraVez = true;
 
 export default function CameraTable() {
   const [cameras, setCameras] = useState<any[]>([]);
@@ -13,7 +14,6 @@ export default function CameraTable() {
   const fetchCameras = async () => {
     setLoading(true);
     setError(null);
-
     try {
       const response = await api.camaras.camarasList();
       setCameras(response.data);
@@ -27,7 +27,10 @@ export default function CameraTable() {
   function deleteCamara(name: string | undefined): void {
     throw new Error("Function not implemented.");
   }
-
+  if(primeraVez){  
+    fetchCameras();
+    primeraVez = false;
+  }
   return (
     <div>
       <button onClick={fetchCameras} disabled={loading}>
@@ -59,5 +62,6 @@ export default function CameraTable() {
         </tbody>
       </table>
     </div>
+  
   );
 }
