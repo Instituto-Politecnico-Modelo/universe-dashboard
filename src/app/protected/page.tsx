@@ -1,6 +1,10 @@
+'use'
 import { auth, signOut } from '@/app/auth';
 import CameraTable  from "@/components/CameraTable";
 import CameraForm from "@/components/CameraForm";
+import TablaPrime from "@/components/TablaPrime";
+import { PrimeReactProvider } from 'primereact/api';
+
 
 export default async function ProtectedPage() {
   let session = await auth();
@@ -21,15 +25,15 @@ export default async function ProtectedPage() {
                   </svg>
               </button>
             </div>
+
           </div>
         </nav>
         <h1 className="text-[15px] font-semibold ml-2 text-[35px] mt-3 font-medium leading-[35px] text-black">Camaras</h1>
         <CameraForm /> 
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
-      <CameraTable />
+        <TablaPrime />
       </div>
-      </div>
-    
+    </div>
   );
 }
 /* Faltan estos

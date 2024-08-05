@@ -1,4 +1,5 @@
 'use client';
+import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
 import React, { useState } from "react";
 import { Api } from "@/services/api";
 import { constants } from "@/utils/constants";
@@ -62,6 +63,6 @@ export default function CameraTable() {
         </tbody>
       </table>
     </div>
-  
+    
   );
 }

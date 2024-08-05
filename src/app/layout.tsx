@@ -1,4 +1,7 @@
+import { PrimeReactProvider } from 'primereact/api';
+import "primereact/resources/themes/viva-light/theme.css";
 import './globals.css';
+
 
 //import { GeistSans } from 'geist/font/sans';
 
@@ -23,8 +26,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    <PrimeReactProvider>
     <html lang="en">
+    <head>
+      <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              const style = document.createElement('style')
+              style.innerHTML = '@layer tailwind-base, primereact, tailwind-utilities;'
+              style.setAttribute('type', 'text/css')
+              document.querySelector('head').prepend(style)
+            `,
+          }}
+        />
+    </head>
       <body /*className={GeistSans.variable}*/>{children}</body>
     </html>
+    </PrimeReactProvider>
   );
 }
