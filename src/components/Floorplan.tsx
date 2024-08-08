@@ -93,22 +93,21 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ty
             const minScale = 0.1;
             const maxScale = 0.483;
             const newScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
-            // set scale 
-//            cubeMesh.scale.set(newScale, newScale, newScale);
-            
+            // set scale
+            //            cubeMesh.scale.set(newScale, newScale, newScale);
 
             // animate the change in scale from the old to the new
             cube.onBeforeRender = (renderer, scene, camera, geometry, material, group) => {
                 const deltaScale = newScale - cubeMesh.scale.x;
                 const scaleSpeed = 0.05;
                 if (Math.abs(deltaScale) > 0.001) {
-                    const newScale = cubeMesh.scale.x + deltaScale * scaleSpeed; 
+                    const newScale = cubeMesh.scale.x + deltaScale * scaleSpeed;
                     cubeMesh.scale.set(newScale, newScale, newScale);
                 } else {
                     // delete callback
                     cube.onBeforeRender = () => {};
                 }
-            }
+            };
 
             // change color based on occupancy and scale
             const hexColor = calculateGradientFromValue(newScale, 0, 0.483, [0x00ff00, 0xccff00, 0xff0000]);
@@ -122,7 +121,7 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ty
     };
 
     useEffect(() => {
-        data.forEach(({location, cant, threshold}) => {
+        data.forEach(({ location, cant, threshold }) => {
             setCubesByOccupancy(location, cant, threshold);
         });
     }, [...data.values()]);
@@ -153,16 +152,14 @@ function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: Ty
     return <primitive object={scene} {...props} />;
 }
 
-function Floorplan({ data, ...props }: { data: TypesData[]; props?: object }) {
+function Floorplan({ data, className, ...props }: { data: TypesData[]; className?: string; props?: object }) {
     const [hovered, setHovered] = useState(false);
 
     return (
-        <div className='flex justify-center items-center h-screen w-screen'>
-            <Canvas className='h-2xl w-2xl' onMouseEnter={() => setHovered(true)} onMouseOut={() => setHovered(false)}>
-                <OrbitControls />
-                <MeshComponent hovered={hovered} data={data} />
-            </Canvas>
-        </div>
+        <Canvas className={className} onMouseEnter={() => setHovered(true)} onMouseOut={() => setHovered(false)}>
+            <OrbitControls />
+            <MeshComponent hovered={hovered} data={data} />
+        </Canvas>
     );
 }
 
