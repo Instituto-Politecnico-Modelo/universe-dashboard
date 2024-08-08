@@ -204,7 +204,6 @@ export default function CamerasDemo(){
 
     const header = (
         <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
-            <h4 className="m-0">Manage Cameras</h4>
             <IconField iconPosition="left">
                 <InputIcon className="pi pi-search" />
                  <InputText type="search" placeholder="Search..." onInput={(e) => {const target = e.target as HTMLInputElement; setGlobalFilter(target.value);}}  />
