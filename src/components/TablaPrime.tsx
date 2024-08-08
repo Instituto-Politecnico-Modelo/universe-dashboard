@@ -98,6 +98,7 @@ export default function CamerasDemo(){
                 threshold: camera.threshold,
                 id: ""
             });
+            
         }
     };
 
@@ -117,6 +118,7 @@ export default function CamerasDemo(){
         setCameras(_cameras);
         setDeleteCameraDialog(false);
         setCamera(emptyCamera);
+        api.camaras.camarasDelete(camera.Id);//esto dice que esta mal, pero esta bien (anda igual)
         toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
     };
 

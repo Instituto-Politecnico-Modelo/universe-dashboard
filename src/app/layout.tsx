@@ -1,7 +1,9 @@
 import { PrimeReactProvider } from 'primereact/api';
-import './globals.css';
 import "primereact/resources/themes/lara-dark-blue/theme.css";
 import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
+import './globals.css';
+
 
 //import { GeistSans } from 'geist/font/sans';
 

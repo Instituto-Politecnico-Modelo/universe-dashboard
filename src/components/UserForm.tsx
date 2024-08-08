@@ -17,7 +17,7 @@ export function UserForm({
   return (
     <form
       action={action}
-      className="flex flex-col space-y-4 bg-gray-50 px-4 py-9 sm:px-16"
+      className="flex flex-col space-y-4 dark:bg-gray-100 px-4 py-8 sm:px-16"
     >
       <div className='py-1'>
         <FloatLabel>
