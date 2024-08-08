@@ -1,10 +1,9 @@
-
+import { Button } from 'primereact/button';
 import { redirect } from 'next/navigation';
 import { createUser, getUser } from '@/app/db';
 import Link from 'next/link';
 import { UserForm } from '@/components/UserForm';
 import { signIn } from '@/app/auth';
-import { SubmitButton } from '@/components/submit-button';
 
 export default function Login() {
   async function register(formData: FormData) {
@@ -31,7 +30,7 @@ export default function Login() {
           </p>
         </div>
         <UserForm action={register}>
-          <SubmitButton>Sign Up</SubmitButton>
+        <Button className='py-1' label='Sign up'></Button>
           <p className="text-center text-sm text-gray-600">
             {'Already have an account? '}
             <Link href="/login" className="font-semibold text-gray-800">
