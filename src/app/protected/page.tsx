@@ -26,7 +26,7 @@ export default async function ProtectedPage() {
 
           </div>
         </nav>
-        <h1 className="text-[15px] font-semibold ml-2 text-[35px] mt-3 font-medium leading-[35px] text-black">Camaras</h1>
+        <h1 className="text-[15px] font-semibold ml-2 text-[35px] mt-3 font-medium leading-[35px] text-white p-2">Camaras</h1>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
         <TablaPrime />
       </div>
