@@ -5,6 +5,8 @@ import './globals.css';
 import 'primereact/resources/themes/lara-dark-blue/theme.css';
 import 'primeicons/primeicons.css';
 import 'primereact/resources/primereact.min.css';
+import "@/styles/background.scss"
+
 
 export const metadata: Metadata = {
     title: 'Create Next App',
@@ -18,8 +20,16 @@ export default function RootLayout({
 }>) {
     return (
         <html lang='en'>
-            <body>
+            <body className='gradient-bg'>
                 <PrimeReactProvider value={{ ripple: true }}>{children}</PrimeReactProvider>
+                <div className="gradients-container">
+                    <div className="g1"></div>
+                    <div className="g2"></div>
+                    <div className="g3"></div>
+                    <div className="g4"></div>
+                    <div className="g5"></div>
+                    <div className="interactive"></div>
+                </div>
             </body>
         </html>
     );

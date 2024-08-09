@@ -85,23 +85,27 @@ function Dashboard() {
     return (
         <>
             {/* https://olavihaapala.fi/2021/02/23/modern-marquee.html */}
-            <div className="fixed w-full left-8 top-0 bottom-0 right-0 h-full rotate-90 flex whitespace-no-wrap overflow-x-hidden">
-                <ul className="flex absolute bottom-0 animate-marquee">
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+            <div className="fixed w-full h-full whitespace-no-wrap overflow-x-scroll motion-safe:overflow-x-hidden">
+                <ul className="flex motion-safe:animate-marquee">
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
 
                 </ul>
-                <ul className="flex absolute bottom-0 animate-marquee2">
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
-                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                <ul className="flex absolute top-0 motion-safe:animate-marquee2">
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
                 </ul>
             </div>
             <main className='flex flex-col w-screen h-screen p-10 gap-10'>
