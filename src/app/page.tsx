@@ -84,42 +84,31 @@ function Dashboard() {
     ); */
     return (
         <>
-            <div className='fixed w-8 h-[100%] inline-flex flex-nowrap rotate-90'>
-                <ul className='flex items-center text-lg text-slate-600 justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll'>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
+            {/* https://olavihaapala.fi/2021/02/23/modern-marquee.html */}
+            <div className="fixed w-full left-8 top-0 bottom-0 right-0 h-full rotate-90 flex whitespace-no-wrap overflow-x-hidden">
+                <ul className="flex absolute bottom-0 animate-marquee">
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+
                 </ul>
-                <ul
-                    className='flex items-center text-lg text-slate-600 justify-center md:justify-start [&_li]:mx-8 [&_img]:max-w-none animate-infinite-scroll'
-                    aria-hidden='true'
-                >
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
-                    <li>POLITECNICO</li>
+                <ul className="flex absolute bottom-0 animate-marquee2">
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
+                    <li className="m-8 text-slate-600"> Politécnico Modelo</li>
                 </ul>
             </div>
             <main className='flex flex-col w-screen h-screen p-10 gap-10'>
                 <div className='flex flex-row w-full h-3/4 gap-10'>
                     <div className='flex flex-col w-1/2 h-full gap-10 border-2 rounded-lg border-sky-700'>
                         <Chart
-                            className='flex-1'
+                            className='flex-1 p-10'
                             type='doughnut'
                             data={toChartJSData(currentOccupancyData)}
                             options={{
