@@ -6,7 +6,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 
-function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: TypesData[]; props?: object }) {
+export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: TypesData[]; props?: object }) {
     const { scene } = useGLTF('/scene.gltf');
 
     // rotate
