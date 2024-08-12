@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Api, HttpResponse } from "@/services/api";
+import { Api, HttpResponse, TypesCamara } from "@/services/api";
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
 import { FileUpload } from 'primereact/fileupload';
@@ -16,6 +16,9 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { constants } from "@/utils/constants";
 import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
+import { Console } from 'console';
+import mongoose, { isValidObjectId } from 'mongoose';
+import { Result } from 'postcss';
 
 
 interface Camera {
@@ -41,6 +44,7 @@ export default function CamerasDemo(){
     const [deleteCameraDialog, setDeleteCameraDialog] = useState<boolean>(false);
     const [deleteCamerasDialog, setDeleteCamerasDialog] = useState<boolean>(false);
     const [camera, setCamera] = useState<Camera>(emptyCamera);
+    const [reloadData, setReloadData] = useState<boolean>(false);
     const [selectedCameras, setSelectedCameras] = useState<Camera[]>([]);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [globalFilter, setGlobalFilter] = useState<string>('');
@@ -49,11 +53,15 @@ export default function CamerasDemo(){
     const api = new Api({ baseUrl: constants.API_URL });
 
     useEffect(() => {
-        api.camaras.camarasList().then((response: HttpResponse<Camera[], any>) => {
-          setCameras(response.data);    
-        });
-      }, []);
+        cargar();
+        setReloadData(false);
+    }, [reloadData]);
 
+    const cargar = () => {
+        api.camaras.camarasList().then((response: HttpResponse<Camera[], any>) => {
+            setCameras(response.data);    
+          });
+    }
 
     const openNew = () => {
         setCamera(emptyCamera);
@@ -78,27 +86,38 @@ export default function CamerasDemo(){
         setSubmitted(true);
 
         if (camera.name.trim()) {
-            let _cameras = [...cameras];
+            let aux2: Camera[];
+            if(cameras == null){
+                aux2 = [];
+            }else{
+                aux2 = cameras
+            }
+            let _cameras = [...aux2];
             let _camera = { ...camera };
 
           
             const index = findIndexById(camera.id);
 
             _cameras[index] = _camera;
-            toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Updated', life: 3000 });
-    
-
-            setCameras(_cameras);
+             setCameras(_cameras);
             setCameraDialog(false);
             setCamera(emptyCamera);
-            api.camara.camaraCreate({
+            var aux: number = parseInt(camera.threshold.toString());            
+            let result = api.camara.camaraCreate({
                 name: camera.name,
                 location: camera.location,
                 url: camera.url,
-                threshold: camera.threshold,
-                id: ""
+                threshold: aux,
+                id: camera.Id   ///si el id de la camara es "000000000000000000000000"
             });
-            
+            result.then((response: HttpResponse<TypesCamara[]>) => {
+                if(response.status == 200 || response.status == 201){
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Cameras Updated', life: 3000 });
+                }else{
+                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
+                }
+            });   
+            setReloadData(true);
         }
     };
 
@@ -118,14 +137,26 @@ export default function CamerasDemo(){
         setCameras(_cameras);
         setDeleteCameraDialog(false);
         setCamera(emptyCamera);
-        api.camaras.camarasDelete(camera.Id);//esto dice que esta mal, pero esta bien (anda igual)
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
+        let result = api.camaras.camarasDelete(camera.Id);//esto dice que esta mal, pero esta bien (anda igual)
+        result.then((response: HttpResponse<TypesCamara[]>) => {
+            if(response.status == 200 || response.status == 201){
+                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
+            }else{
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error deleting the camera', life: 3000 });
+            }
+        });           
+        setReloadData(true);
     };
 
     const findIndexById = (id: string) => {
         let index = -1;
-
-        for (let i = 0; i < cameras.length; i++) {
+        let aux : number;
+        if(cameras == null){
+            aux = 0;
+        }else{
+            aux = cameras.length;
+        }
+        for (let i = 0; i < aux; i++) {
             if (cameras[i].id === id) {
                 index = i;
                 break;
@@ -151,7 +182,17 @@ export default function CamerasDemo(){
         setCameras(_cameras);
         setDeleteCamerasDialog(false);
         setSelectedCameras([]);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Cameras Deleted', life: 3000 });
+        selectedCameras.forEach((camera) => {
+            let result = api.camaras.camarasDelete(camera.Id);
+            result.then((response: HttpResponse<TypesCamara[]>) => {
+                if(response.status == 200 || response.status == 201){
+                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
+                }else{
+                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
+                }
+            });   
+        });
+        setReloadData(true);
     };
 
 
@@ -241,13 +282,12 @@ export default function CamerasDemo(){
                                 setSelectedCameras(e.value);
                             }
                         }}
-                        dataKey="id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
+                        dataKey="Id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} cameras" globalFilter={globalFilter} header={header}
                         selectionMode="multiple"
                 >
                     <Column selectionMode="multiple" exportable={false}></Column>
-                    <Column field="id" header="Id" sortable style={{ minWidth: '12%' }}></Column>
                     <Column field="name" header="Name" sortable style={{ minWidth: '12%' }}></Column>
                     <Column field="url" header="Url" sortable style={{ minWidth: '12%' }}></Column>
                     <Column field="location" header="Location" sortable style={{ minWidth: '12%' }}></Column>
@@ -283,7 +323,7 @@ export default function CamerasDemo(){
                     <label htmlFor="threshold" className="font-bold">
                         Threshold
                     </label>
-                    <InputText id="name" value={String(camera.threshold)} onChange={(e) => onInputChange(e, 'threshold')} required autoFocus className={classNames({ 'p-invalid': submitted && !camera.threshold })} />
+                    <InputText id="name" keyfilter="int" value={String(camera.threshold)} onChange={(e) => onInputChange(e, 'threshold')} required autoFocus className={classNames({ 'p-invalid': submitted && !camera.threshold })} />
                                         
                     {submitted && !camera.threshold && <small className="p-error">Threshold is required.</small>}
                 </div>

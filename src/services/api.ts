@@ -254,6 +254,7 @@ export class HttpClient<SecurityDataType = unknown> {
 */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   camara = {
+
       /**
        * @description Create a new camera
        *
