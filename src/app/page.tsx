@@ -112,7 +112,7 @@ function Dashboard() {
                 </ul>
             </div>
             */}
-            <InteractiveMarquee className='fixed h-full left-[-65vw] top-[55vw]' rotate={25}>
+            <InteractiveMarquee className='fixed h-full left-[-65vw] top-[75vw] uppercase' rotate={25}>
                 <span
                     className={`text-nowrap text-[3vw] pr-2 ${kanit.className}`}
                     style={{ WebkitTextFillColor: 'transparent', WebkitTextStroke: '1.5px orange' }}
