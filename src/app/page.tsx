@@ -17,6 +17,10 @@ import { ChartData, Legend, plugins, Ticks } from 'chart.js';
 import { color } from 'chart.js/helpers';
 import { title } from 'process';
 import ChartJS from 'chart.js/auto';
+import { InteractiveMarquee } from '@/components/Marquee';
+import { Kanit } from 'next/font/google';
+
+const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
 function Dashboard() {
     const [currentOccupancyData, setCurrentOccupancyData] = useState<TypesData[]>([
@@ -84,30 +88,39 @@ function Dashboard() {
     ); */
     return (
         <>
-            {/* https://olavihaapala.fi/2021/02/23/modern-marquee.html */}
-            <div className="fixed w-full h-full whitespace-no-wrap overflow-x-scroll motion-safe:overflow-x-hidden">
-                <ul className="flex motion-safe:animate-marquee">
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-
+            {/* https://olavihaapala.fi/2021/02/23/modern-marquee.html 
+            <div className='fixed w-full h-full whitespace-no-wrap overflow-x-scroll motion-safe:overflow-x-hidden'>
+                <ul className='flex motion-safe:animate-marquee'>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
                 </ul>
-                <ul className="flex absolute top-0 motion-safe:animate-marquee2">
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
-                    <li className="mx-8 text-slate-500"> Politécnico Modelo</li>
+                <ul className='flex absolute top-0 motion-safe:animate-marquee2'>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
+                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
                 </ul>
             </div>
+            */}
+            <InteractiveMarquee className='fixed h-full left-[-65vw] top-[55vw]' rotate={25}>
+                <span
+                    className={`text-nowrap text-[3vw] pr-2 ${kanit.className}`}
+                    style={{ WebkitTextFillColor: 'transparent', WebkitTextStroke: '1.5px orange' }}
+                >
+                    Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo
+                    Politécnico Modelo Politécnico Modelo
+                </span>
+            </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen p-10 gap-10'>
                 <div className='flex flex-row w-full h-3/4 gap-10'>
                     <div className='flex flex-col w-1/2 h-full gap-10 border-2 rounded-lg border-sky-700'>

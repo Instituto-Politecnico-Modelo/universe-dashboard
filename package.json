@@ -10,11 +10,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-hook/window-size": "^3.1.1",
     "@react-three/drei": "^9.106.0",
     "@react-three/fiber": "^8.16.8",
     "@tanstack/react-query": "^5.51.21",
     "@types/three": "^0.165.0",
     "chart.js": "^4.4.3",
+    "framer-motion": "^11.3.24",
     "next": "14.2.3",
     "prettier": "^3.3.1",
     "primeicons": "^7.0.0",
@@ -22,6 +24,7 @@
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
+    "react-use": "^17.5.1",
     "sass": "^1.77.8",
     "three": "^0.165.0"
   },
