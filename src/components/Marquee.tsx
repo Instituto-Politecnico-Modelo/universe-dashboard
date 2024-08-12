@@ -77,7 +77,7 @@ type MarqueeProps = {
 
 export const InteractiveMarquee: React.FC<MarqueeProps> = (props) => {
     const {
-        speed = 1,
+        speed = 0,
         threshold = 0.014,
         wheelFactor = 1.8,
         dragFactor = 1.2,

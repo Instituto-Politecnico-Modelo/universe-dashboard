@@ -19,115 +19,42 @@ import { title } from 'process';
 import ChartJS from 'chart.js/auto';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { Kanit } from 'next/font/google';
+import { OccupancyDataProvider, useOccupancyData } from '@/contexts/OccupancyDataContext';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
 function Dashboard() {
-    const [currentOccupancyData, setCurrentOccupancyData] = useState<TypesData[]>([
-        {
-            location: 'patio',
-            cant: 50,
-            threshold: 50,
-            camera_id: '',
-            time: Date(),
-        },
-        {
-            location: 'laboratorio_1',
-            cant: 10,
-            threshold: 50,
-            camera_id: '',
-            time: Date(),
-        },
-        {
-            location: 'laboratorio_2',
-            cant: 20,
-            threshold: 50,
-            camera_id: '',
-            time: Date(),
-        },
-        {
-            location: 'laboratorio_3',
-            cant: 5,
-            threshold: 50,
-            camera_id: '',
-            time: Date(),
-        },
-        {
-            location: 'electronica',
-            cant: 40,
-            threshold: 50,
-            camera_id: '',
-            time: Date(),
-        },
-    ]);
     ChartJS.defaults.color = 'white';
-    /* useQuery({
+    const occupancyData = useOccupancyData();
+    useQuery({
         queryKey: ['currentData'],
         queryFn: () => {
             const client = new Api({ baseUrl: 'http://localhost:8080/api/v1' });
             return client.data.dataList().then((response) => {
-                setCurrentOccupancyData(response.data);
+                occupancyData.updateOccupancyData(response.data);
                 return response.data;
             });
         },
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
-    }); */
-    /*
-    const [currentOccupancyData, setCurrentOccupancyData] = useState<Map<string, number>>(
-        new Map([
-            ['patio', 10],
-            ['laboratorio_1', 10],
-            ['laboratorio_2', 20],
-            ['laboratorio_3', 5],
-            ['electronica', 5],
-            ['pasillo', 5],
-            ['aula_6', 4],
-            ['aula_8', 15],
-        ]),
-    ); */
+    }); 
     return (
         <>
-            {/* https://olavihaapala.fi/2021/02/23/modern-marquee.html 
-            <div className='fixed w-full h-full whitespace-no-wrap overflow-x-scroll motion-safe:overflow-x-hidden'>
-                <ul className='flex motion-safe:animate-marquee'>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                </ul>
-                <ul className='flex absolute top-0 motion-safe:animate-marquee2'>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                    <li className='mx-8 text-slate-500'> Politécnico Modelo</li>
-                </ul>
-            </div>
-            */}
-            <InteractiveMarquee className='fixed h-full left-[-65vw] top-[75vw] uppercase' rotate={25}>
+            <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
                 <span
                     className={`text-nowrap text-[3vw] pr-2 ${kanit.className}`}
                     style={{ WebkitTextFillColor: 'transparent', WebkitTextStroke: '1.5px orange' }}
                 >
-                    Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo
-                    Politécnico Modelo Politécnico Modelo
+                    Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo 
                 </span>
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen p-10 gap-10'>
                 <div className='flex flex-row w-full h-3/4 gap-10'>
                     <div className='flex flex-col w-1/2 h-full gap-10 border-2 rounded-lg border-sky-700'>
                         <Chart
-                            className='flex-1 p-10'
+                            className='p-10'
                             type='doughnut'
-                            data={toChartJSData(currentOccupancyData)}
+                            data={toChartJSData(occupancyData.getAllCurrentOccupancyData())}
                             options={{
                                 legend: {
                                     display: false,
@@ -147,12 +74,15 @@ function Dashboard() {
                             }}
                         />
                     </div>
-                    <Floorplan className='flex-1 border-sky-700 border-2 rounded-lg' data={currentOccupancyData} />
+                    <Floorplan className='flex-1 border-sky-700 border-2 rounded-lg' data={occupancyData.getAllCurrentOccupancyData()} />
                 </div>
             </main>
         </>
     );
 }
+
+
+
 
 function toChartJSData(data: TypesData[]): ChartData {
     return {
@@ -183,7 +113,9 @@ export default function Home() {
     const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
-            <Dashboard />
+            <OccupancyDataProvider>
+                <Dashboard />
+            </OccupancyDataProvider>
         </QueryClientProvider>
     );
 }
