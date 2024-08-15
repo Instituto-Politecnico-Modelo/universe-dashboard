@@ -19,13 +19,15 @@ import { title } from 'process';
 import ChartJS from 'chart.js/auto';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { Kanit } from 'next/font/google';
-import { OccupancyDataProvider, useOccupancyData } from '@/contexts/OccupancyDataContext';
+import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
+import { getLatestForAllCameras } from '@/actions/occupancyDataActions';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
-function Dashboard() {
+async function Dashboard() {
     ChartJS.defaults.color = 'white';
     const occupancyData = useOccupancyData();
+    /*
     useQuery({
         queryKey: ['currentData'],
         queryFn: () => {
@@ -37,7 +39,8 @@ function Dashboard() {
         },
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
-    }); 
+    }); */
+    occupancyData.updateOccupancyData(await getLatestForAllCameras());
     return (
         <>
             <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
@@ -82,12 +85,12 @@ function Dashboard() {
 
 
 
-function toChartJSData(data: TypesData[]): ChartData {
+function toChartJSData(data: OccupancyData[]): ChartData {
     return {
         datasets: [
             {
                 label: 'Current Occupancy',
-                data: data.map((d) => d.cant),
+                data: data.map((d) => d.personas),
                 backgroundColor: [
                     // tailwind colors
                     // sky-400

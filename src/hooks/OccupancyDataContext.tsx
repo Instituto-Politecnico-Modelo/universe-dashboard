@@ -1,12 +1,11 @@
-import { TypesData } from "@/services/dataApi";
 import { createContext, useContext, useState } from "react";
 
 
 type OccupancyDataContextType = {
-    occupancyData: TypesData[];
-    updateOccupancyData: (newData: TypesData[]) => void;    
-    getAllCurrentOccupancyData: () => TypesData[];
-    getAllDataForLocation: (location: string) => TypesData[];
+    occupancyData: OccupancyData[];
+    updateOccupancyData: (newData: OccupancyData[]) => void;    
+    getAllCurrentOccupancyData: () => OccupancyData[];
+    getAllDataForLocation: (location: string) => OccupancyData[];
 }
 
 
@@ -20,17 +19,17 @@ const OccupancyDataContext = createContext<OccupancyDataContextType>({
 export const useOccupancyData = () => useContext(OccupancyDataContext);
 
 export function OccupancyDataProvider({ children }: { children: React.ReactNode }) {
-    const [occupancyData, setOccupancyData] = useState<TypesData[]>([]);
+    const [occupancyData, setOccupancyData] = useState<OccupancyData[]>([]);
     
-    const updateOccupancyData = (newData: TypesData[]) => {
+    const updateOccupancyData = (newData: OccupancyData[]) => {
         if (newData) setOccupancyData((prevData) => [...prevData, ...newData]);
     }
 
     const getAllCurrentOccupancyData  = () => {
         // get latest occupancy data for each location
-        const latestData: { [key: string]: TypesData } = {};
+        const latestData: { [key: string]: OccupancyData} = {};
         occupancyData.forEach((data) => {
-            if (!latestData[data.location] || latestData[data.location].time < data.time) {
+            if (!latestData[data.location] || latestData[data.location].timeStamp < data.timeStamp) {
                 latestData[data.location] = data;
             }
         });

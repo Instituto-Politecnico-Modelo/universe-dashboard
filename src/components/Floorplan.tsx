@@ -6,7 +6,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 
-export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: TypesData[]; props?: object }) {
+export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: OccupancyData[]; props?: object }) {
     const { scene } = useGLTF('/scene.gltf');
 
     // rotate
@@ -121,8 +121,8 @@ export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; d
     };
 
     useEffect(() => {
-        data.forEach(({ location, cant, threshold }) => {
-            setCubesByOccupancy(location, cant, threshold);
+        data.forEach(({ location, personas, threshold }) => {
+            setCubesByOccupancy(location, personas, threshold);
         });
     }, [...data.values()]);
 
@@ -152,7 +152,7 @@ export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; d
     return <primitive object={scene} {...props} />;
 }
 
-function Floorplan({ data, className, ...props }: { data: TypesData[]; className?: string; props?: object }) {
+function Floorplan({ data, className, ...props }: { data: OccupancyData[]; className?: string; props?: object }) {
     const [hovered, setHovered] = useState(false);
 
     return (
