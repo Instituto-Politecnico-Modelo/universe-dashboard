@@ -50,9 +50,8 @@ function Dashboard() {
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen p-10 gap-10'>
                 <div className='flex flex-row w-full h-3/4 gap-10'>
-                    <div className='flex flex-col w-1/2 h-full gap-10 border-2 rounded-lg border-sky-700'>
                         <Chart
-                            className='p-10'
+                            className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'
                             type='doughnut'
                             data={toChartJSData(occupancyData.getAllCurrentOccupancyData())}
                             options={{
@@ -73,7 +72,6 @@ function Dashboard() {
                                 },
                             }}
                         />
-                    </div>
                     <Floorplan className='flex-1 border-sky-700 border-2 rounded-lg' data={occupancyData.getAllCurrentOccupancyData()} />
                 </div>
             </main>
