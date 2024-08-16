@@ -70,7 +70,7 @@ export async function getAllHisoticalData(): Promise<OccupancyData[]> {
                 },
                 {
                     $sort: {
-                        timestamp: 1,
+                        timestamp: -1,
                     },
                 },
             ])

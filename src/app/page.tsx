@@ -1,5 +1,5 @@
 'use client';
-import { getLatestForAllCameras } from '@/actions/occupancyDataActions';
+import { getAllHisoticalData, getLatestForAllCameras } from '@/actions/occupancyDataActions';
 import Floorplan from '@/components/Floorplan';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
@@ -15,31 +15,41 @@ const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 function Dashboard() {
     ChartJS.defaults.color = 'white';
     const occupancyData = useOccupancyData();
-    // TODO: query for historical data
-    const { isError, isLoading, error, data} =  useQuery({
+    const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
         queryFn: async () => await getLatestForAllCameras(),
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
     });
 
+    const historicalDataQuery = useQuery({
+        queryKey: ['historicalData'],
+        queryFn: async () => await getAllHisoticalData(),
+    });
+
     useEffect(() => {
-        if (data)
-            occupancyData.updateOccupancyData(data);
+        if (!data) return;
+
+        // TODO: evaluar si es mejor tener un hash map para evitar duplicados
+        if (occupancyData.occupancyData.find((d) => d._id === data[0]._id)) return;
+        occupancyData.updateOccupancyData(data);
     }, [data]);
 
+    useEffect(() => {
+        if (historicalDataQuery.data) occupancyData.updateOccupancyData(historicalDataQuery.data);
+    }, [historicalDataQuery.data]);
 
     if (isLoading) {
-        return <div className='centered text-4xl h-full w-full content-center'>
-            <p className='text-center'>Loading </p>
-        </div>;
+        return (
+            <div className='centered text-4xl h-full w-full content-center'>
+                <p className='text-center'>Loading </p>
+            </div>
+        );
     }
 
     if (isError) {
         return <div className='centered'>Error: {error.message}</div>;
     }
-
-
 
     return (
         <>
@@ -53,7 +63,7 @@ function Dashboard() {
                 </span>
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
-                <div className='flex flex-row w-full gap-4'>
+                <div className='flex flex-row w-full h-3/4 gap-4'>
                     <Chart
                         className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'
                         type='doughnut'
@@ -83,17 +93,14 @@ function Dashboard() {
                 </div>
                 {/* historical line chart for all cameras (total count) */}
                 <Chart
-                    className='flex-1 border-sky-700 w-full border-2 rounded-lg'
+                    className='flex-1 h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'
                     type='line'
                     data={historicalChartData(occupancyData.occupancyData)}
                     options={{
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Ocupación total',
-                                color: '#fff',
-                            },
-                        },
+                        responsive: true,
+                        mantainAspectRatio: false,
+                        // HACK: mantainAspectRatio doesn't seem to be working
+                        aspectRatio: 7,
                     }}
                 />
             </main>
@@ -113,7 +120,6 @@ function currentChartData(data: OccupancyData[]): ChartData {
                     '#7dd3fc',
                 ],
                 borderColor: '#0369a1', // sky-900
-                hoverOffset: 4,
             },
         ],
         labels: data.map((d) =>
@@ -134,10 +140,10 @@ function historicalChartData(data: OccupancyData[]): ChartData {
                 data: data.map((d) => d.personas),
                 backgroundColor: ['#7dd3fc'],
                 borderColor: '#0369a1',
-                hoverOffset: 4,
+                fill: true,
             },
         ],
-        labels: data.map((d) => d.timestamp),
+        labels: data.map((d) => d.timestamp.toTimeString().slice(0, 5)),
     };
 }
 
