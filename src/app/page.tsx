@@ -94,6 +94,7 @@ function toChartJSData(data: OccupancyData[]): ChartData {
     };
 }
 
+
 export default function Home() {
     const queryClient = new QueryClient();
     return (
