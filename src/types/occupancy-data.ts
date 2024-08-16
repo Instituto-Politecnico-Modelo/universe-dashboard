@@ -1,7 +1,8 @@
 interface OccupancyData {
-    _id: string
+    _id: string;
     camera_id: string;
-    timeStamp: Date;
+    timestamp: Date;
+    url: string;
     personas: number;
     location: string;
     threshold: number;

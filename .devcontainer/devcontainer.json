@@ -6,7 +6,8 @@
 	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
 	"features": {
 		"ghcr.io/devcontainers/features/go:1": {},
-		"ghcr.io/shyim/devcontainers-features/bun:0": {}
+		"ghcr.io/shyim/devcontainers-features/bun:0": {},
+		"ghcr.io/devcontainers/features/docker-in-docker": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -24,7 +25,9 @@
 				"VisualStudioExptTeam.vscodeintellicode",
 				"VisualStudioExptTeam.intellicode-api-usage-examples",
 				"dbaeumer.vscode-eslint",
-				"vscodevim.vim"
+				"vscodevim.vim",
+				"Gruntfuggly.todo-tree",
+				"mongodb.mongodb-vscode"
 			]
 		}
 	}

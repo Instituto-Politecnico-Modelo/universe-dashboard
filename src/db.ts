@@ -1,9 +1,8 @@
 import { MongoClient } from 'mongodb';
 
-
 if (!process.env.MONGODB_URL) {
-  console.log('MONGO_URL is not defined');
-  process.env.MONGODB_URL = 'mongodb://localhost:27017/galaxy';
+    console.log('MONGO_URL is not defined');
+    process.env.MONGODB_URL = 'mongodb://localhost:27017/galaxy';
 }
 
 const uri = process.env.MONGODB_URL;
@@ -13,7 +12,7 @@ let client: MongoClient;
 
 if (process.env.NODE_ENV === 'development') {
     let globalWithMongo = global as typeof globalThis & {
-        _mongoClient?: MongoClient 
+        _mongoClient?: MongoClient;
     };
 
     if (!globalWithMongo._mongoClient) {
