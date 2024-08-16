@@ -8,22 +8,39 @@ import { ChartData } from 'chart.js';
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
 import { Chart } from 'primereact/chart';
+import { useEffect } from 'react';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
 function Dashboard() {
     ChartJS.defaults.color = 'white';
     const occupancyData = useOccupancyData();
-    useQuery({
+    // TODO: query for historical data
+    const { isError, isLoading, error, data} =  useQuery({
         queryKey: ['currentData'],
-        queryFn: async () => {
-            const latestData = await getLatestForAllCameras();
-            occupancyData.updateOccupancyData(latestData);
-            return latestData;
-        },
+        queryFn: async () => await getLatestForAllCameras(),
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
     });
+
+    useEffect(() => {
+        if (data)
+            occupancyData.updateOccupancyData(data);
+    }, [data]);
+
+
+    if (isLoading) {
+        return <div className='centered text-4xl h-full w-full content-center'>
+            <p className='text-center'>Loading </p>
+        </div>;
+    }
+
+    if (isError) {
+        return <div className='centered'>Error: {error.message}</div>;
+    }
+
+
+
     return (
         <>
             <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
@@ -35,12 +52,12 @@ function Dashboard() {
                     Politécnico Modelo Politécnico Modelo
                 </span>
             </InteractiveMarquee>
-            <main className='flex flex-col w-screen h-screen p-10 gap-10'>
-                <div className='flex flex-row w-full h-3/4 gap-10'>
+            <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
+                <div className='flex flex-row w-full gap-4'>
                     <Chart
                         className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'
                         type='doughnut'
-                        data={toChartJSData(occupancyData.getAllCurrentOccupancyData())}
+                        data={currentChartData(occupancyData.getAllCurrentOccupancyData())}
                         options={{
                             legend: {
                                 display: false,
@@ -64,12 +81,27 @@ function Dashboard() {
                         data={occupancyData.getAllCurrentOccupancyData()}
                     />
                 </div>
+                {/* historical line chart for all cameras (total count) */}
+                <Chart
+                    className='flex-1 border-sky-700 w-full border-2 rounded-lg'
+                    type='line'
+                    data={historicalChartData(occupancyData.occupancyData)}
+                    options={{
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Ocupación total',
+                                color: '#fff',
+                            },
+                        },
+                    }}
+                />
             </main>
         </>
     );
 }
 
-function toChartJSData(data: OccupancyData[]): ChartData {
+function currentChartData(data: OccupancyData[]): ChartData {
     return {
         datasets: [
             {
@@ -91,6 +123,21 @@ function toChartJSData(data: OccupancyData[]): ChartData {
                 .map((s) => s[0].toUpperCase() + s.slice(1))
                 .join(' '),
         ),
+    };
+}
+
+function historicalChartData(data: OccupancyData[]): ChartData {
+    return {
+        datasets: [
+            {
+                label: 'Ocupación total',
+                data: data.map((d) => d.personas),
+                backgroundColor: ['#7dd3fc'],
+                borderColor: '#0369a1',
+                hoverOffset: 4,
+            },
+        ],
+        labels: data.map((d) => d.timestamp),
     };
 }
 
