@@ -54,6 +54,45 @@ export async function getLatestForAllCameras(): Promise<OccupancyData[]> {
     });
 }
 
+export async function getAllHisoticalData(): Promise<OccupancyData[]> {
+    return client.connect().then(async () => {
+        const snaps = client.db('galaxy').collection('snapshots');
+        const cameras = client.db('galaxy').collection('cameras');
+
+        const allSnaps = await snaps
+            .aggregate([
+                {
+                    $match: {
+                        personas: {
+                            $exists: true,
+                        },
+                    },
+                },
+                {
+                    $sort: {
+                        timestamp: -1,
+                    },
+                },
+            ])
+            .toArray();
+
+        const cameraData = await cameras.find().toArray();
+
+        return allSnaps.map((snap) => {
+            const camera = cameraData.find((c) => c._id.equals(snap.camera_id));
+            return {
+                _id: snap._id.toString(),
+                camera_id: snap.camera_id.toString(),
+                location: camera?.location,
+                timestamp: snap.timestamp,
+                url: snap.url,
+                personas: snap.personas,
+                threshold: camera?.threshold,
+            };
+        });
+    });
+}
+
 export async function getLatestForCamera(camera_id: string): Promise<OccupancyData> {
     return client.connect().then(async () => {
         const snaps = client.db('galaxy').collection('snapshots');
