@@ -19,24 +19,20 @@ import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
 import { Console } from 'console';
 import mongoose, { isValidObjectId } from 'mongoose';
 import { Result } from 'postcss';
+import { createCameraAction, getAllCameras } from '@/actions/cameraActions';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { ObjectId } from 'mongodb';
 
-
-interface Camera {
-    id: string ;
-    name: string;
-    location: string;
-    url: string;
-    threshold: number;
-}
 export default function CamerasDemo(){
     let emptyCamera: Camera = {
-        id: '',
+        _id: '',
         name: '',
         location: '',
         url: '',
         threshold: 0,
     };
 
+    
 
 
     const [cameras, setCameras] = useState<Camera[]>([]);
@@ -48,20 +44,23 @@ export default function CamerasDemo(){
     const [selectedCameras, setSelectedCameras] = useState<Camera[]>([]);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [globalFilter, setGlobalFilter] = useState<string>('');
+    const [createCamera, setCreateCamera] = useState<Camera>(emptyCamera); //
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<Camera[]>>(null);
     const api = new Api({ baseUrl: constants.API_URL });
 
-    useEffect(() => {
-        cargar();
-        setReloadData(false);
-    }, [reloadData]);
+    useEffect( () => { 
+        createCameraAction(createCamera);
+        setCreateCamera(emptyCamera);
+    }, [createCamera]);
 
-    const cargar = () => {
-        api.camaras.camarasList().then((response: HttpResponse<Camera[], any>) => {
-            setCameras(response.data);    
-          });
-    }
+
+
+    // useEffect(() => {
+    //     cargar();
+    //     setReloadData(false);
+    // }, [reloadData]);
+
 
     const openNew = () => {
         setCamera(emptyCamera);
@@ -96,27 +95,28 @@ export default function CamerasDemo(){
             let _camera = { ...camera };
 
           
-            const index = findIndexById(camera.id);
+            const index = findIndexById(camera._id);
 
             _cameras[index] = _camera;
              setCameras(_cameras);
             setCameraDialog(false);
             setCamera(emptyCamera);
             var aux: number = parseInt(camera.threshold.toString());            
-            let result = api.camara.camaraCreate({
+            let cam ={
+                _id: String(new ObjectId()),
                 name: camera.name,
                 location: camera.location,
                 url: camera.url,
-                threshold: aux,
-                id: camera.Id   ///si el id de la camara es "000000000000000000000000"
-            });
-            result.then((response: HttpResponse<TypesCamara[]>) => {
+                threshold: aux
+            };
+            setCreateCamera(cam);
+            /*result.then((response: HttpResponse<TypesCamara[]>) => {
                 if(response.status == 200 || response.status == 201){
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Cameras Updated', life: 3000 });
                 }else{
                     toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
                 }
-            });   
+            });   */
             setReloadData(true);
         }
     };
@@ -132,12 +132,12 @@ export default function CamerasDemo(){
     };
 
     const deleteCamera = () => {
-        let _cameras = cameras.filter((val) => val.id !== camera.id);
+        let _cameras = cameras.filter((val) => val._id !== camera._id);
 
         setCameras(_cameras);
         setDeleteCameraDialog(false);
         setCamera(emptyCamera);
-        let result = api.camaras.camarasDelete(camera.Id);//esto dice que esta mal, pero esta bien (anda igual)
+        let result = api.camaras.camarasDelete(camera._id);//esto dice que esta mal, pero esta bien (anda igual)
         result.then((response: HttpResponse<TypesCamara[]>) => {
             if(response.status == 200 || response.status == 201){
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
@@ -157,7 +157,7 @@ export default function CamerasDemo(){
             aux = cameras.length;
         }
         for (let i = 0; i < aux; i++) {
-            if (cameras[i].id === id) {
+            if (cameras[i]._id === id) {
                 index = i;
                 break;
             }
@@ -183,7 +183,7 @@ export default function CamerasDemo(){
         setDeleteCamerasDialog(false);
         setSelectedCameras([]);
         selectedCameras.forEach((camera) => {
-            let result = api.camaras.camarasDelete(camera.Id);
+            let result = api.camaras.camarasDelete(camera._id);
             result.then((response: HttpResponse<TypesCamara[]>) => {
                 if(response.status == 200 || response.status == 201){
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
@@ -340,7 +340,7 @@ export default function CamerasDemo(){
                     )}
                 </div>
             </Dialog>
-
+           
             <Dialog visible={deleteCamerasDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteCamerasDialogFooter} onHide={hidedeleteCamerasDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />

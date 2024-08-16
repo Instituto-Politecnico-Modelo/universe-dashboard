@@ -1,22 +1,25 @@
 import { Button } from 'primereact/button';
 import { redirect } from 'next/navigation';
-import { createUser, getUser } from '@/app/db';
 import Link from 'next/link';
 import { UserForm } from '@/components/UserForm';
 import { signIn } from '@/app/auth';
+import { createUserAction, getUserAction} from '@/actions/userActions';
 
 export default function Login() {
   async function register(formData: FormData) {
     'use server';
     let email = formData.get('email') as string;
     let password = formData.get('password') as string;
-    let user = await getUser(email);
-
-    if (user.length > 0) {
-      return 'User already exists'; // TODO: Handle errors with useFormStatus
-    } else {
-      await createUser(email, password);
-      redirect('/login');
+    let user = await getUserAction(email);
+    if(user != null){
+      if (user.length > 0) {
+        return 'User already exists'; // TODO: Handle errors with useFormStatus
+      } else {
+        await createUserAction(email, password);
+        redirect('/login');
+      }
+    }else{
+      return 'Error creating user';
     }
   }
 
