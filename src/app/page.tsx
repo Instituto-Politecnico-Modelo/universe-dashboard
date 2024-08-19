@@ -100,7 +100,7 @@ function Dashboard() {
                         responsive: true,
                         mantainAspectRatio: false,
                         // HACK: mantainAspectRatio doesn't seem to be working
-                        aspectRatio: 7,
+                        aspectRatio: 9,
                     }}
                 />
             </main>
