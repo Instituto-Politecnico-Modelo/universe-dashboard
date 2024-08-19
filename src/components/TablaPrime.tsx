@@ -3,25 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Api, HttpResponse, TypesCamara } from "@/services/api";
+
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
-import { FileUpload } from 'primereact/fileupload';
 import { Toolbar } from 'primereact/toolbar';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { InputNumber,InputNumberValueChangeEvent } from 'primereact/inputnumber';
+import { InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { constants } from "@/utils/constants";
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
-import { Console } from 'console';
-import mongoose, { isValidObjectId } from 'mongoose';
-import { Result } from 'postcss';
-import { createCameraAction, getAllCameras } from '@/actions/cameraActions';
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { ObjectId } from 'mongodb';
+import { createCameraAction, deleteCameraAction, getAllCameras, updateCameraAction } from '@/actions/cameraActions';
+import { WithId } from 'mongodb';
+import { Camera } from '@/types/camera';
+import { update } from 'three/examples/jsm/libs/tween.module.js';
 
 export default function CamerasDemo(){
     let emptyCamera: Camera = {
@@ -31,7 +26,7 @@ export default function CamerasDemo(){
         url: '',
         threshold: 0,
     };
-
+    
     
 
 
@@ -45,22 +40,29 @@ export default function CamerasDemo(){
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [globalFilter, setGlobalFilter] = useState<string>('');
     const [createCamera, setCreateCamera] = useState<Camera>(emptyCamera); //
+    const [getCams, setGetCams] = useState<boolean>(false); //
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<Camera[]>>(null);
-    const api = new Api({ baseUrl: constants.API_URL });
-
+/*
     useEffect( () => { 
         createCameraAction(createCamera);
         setCreateCamera(emptyCamera);
     }, [createCamera]);
+*/
 
 
+     useEffect(() => {
+        conseguirCams();
+        setGetCams(false);
+    }, [getCams]);
 
-    // useEffect(() => {
-    //     cargar();
-    //     setReloadData(false);
-    // }, [reloadData]);
 
+    const conseguirCams = async () => {
+        let result = await getAllCameras();
+        if(result){
+            setCameras(result);
+        }
+    }
 
     const openNew = () => {
         setCamera(emptyCamera);
@@ -82,8 +84,7 @@ export default function CamerasDemo(){
     };
 
     const saveCamera = () => {
-        setSubmitted(true);
-
+        //setSubmitted(true);
         if (camera.name.trim()) {
             let aux2: Camera[];
             if(cameras == null){
@@ -101,15 +102,28 @@ export default function CamerasDemo(){
              setCameras(_cameras);
             setCameraDialog(false);
             setCamera(emptyCamera);
-            var aux: number = parseInt(camera.threshold.toString());            
-            let cam ={
-                _id: String(new ObjectId()),
-                name: camera.name,
-                location: camera.location,
-                url: camera.url,
-                threshold: aux
-            };
-            setCreateCamera(cam);
+            var aux: number = parseInt(camera.threshold.toString());   
+            if(camera._id != ''){
+                let cam ={
+                    _id: camera._id,
+                    name: camera.name,
+                    location: camera.location,
+                    url: camera.url,
+                    threshold: aux
+                };
+                updateCameraAction(cam);
+            }
+            else{      
+                let cam ={
+                    _id: "none",
+                    name: camera.name,
+                    location: camera.location,
+                    url: camera.url,
+                    threshold: aux
+                };
+                console.log("camara", cam);
+                createCameraAction(cam);
+            }
             /*result.then((response: HttpResponse<TypesCamara[]>) => {
                 if(response.status == 200 || response.status == 201){
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Cameras Updated', life: 3000 });
@@ -117,8 +131,9 @@ export default function CamerasDemo(){
                     toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
                 }
             });   */
-            setReloadData(true);
+           //setGetCams(true);
         }
+        setGetCams(true);
     };
 
     const editCamera = (camera: Camera) => {
@@ -137,7 +152,8 @@ export default function CamerasDemo(){
         setCameras(_cameras);
         setDeleteCameraDialog(false);
         setCamera(emptyCamera);
-        let result = api.camaras.camarasDelete(camera._id);//esto dice que esta mal, pero esta bien (anda igual)
+        deleteCameraAction(camera._id);
+   /*     let result = api.camaras.camarasDelete(camera._id);
         result.then((response: HttpResponse<TypesCamara[]>) => {
             if(response.status == 200 || response.status == 201){
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
@@ -145,7 +161,8 @@ export default function CamerasDemo(){
                 toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error deleting the camera', life: 3000 });
             }
         });           
-        setReloadData(true);
+     */ //  setGetCams(true);
+        setGetCams(false);
     };
 
     const findIndexById = (id: string) => {
@@ -181,8 +198,7 @@ export default function CamerasDemo(){
 
         setCameras(_cameras);
         setDeleteCamerasDialog(false);
-        setSelectedCameras([]);
-        selectedCameras.forEach((camera) => {
+     /*   selectedCameras.forEach((camera) => {
             let result = api.camaras.camarasDelete(camera._id);
             result.then((response: HttpResponse<TypesCamara[]>) => {
                 if(response.status == 200 || response.status == 201){
@@ -192,7 +208,14 @@ export default function CamerasDemo(){
                 }
             });   
         });
-        setReloadData(true);
+       */
+      console.log("selectedCameras", selectedCameras);
+        selectedCameras.forEach((camera) => {
+            console.log("camera", camera);
+            deleteCameraAction(camera._id);
+        });
+        setSelectedCameras([]);
+       setGetCams(true);
     };
 
 
@@ -200,7 +223,6 @@ export default function CamerasDemo(){
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
         let _camera = { ...camera };
-
         // @ts-ignore
         _camera[name] = val;
 
@@ -281,8 +303,9 @@ export default function CamerasDemo(){
                             if (Array.isArray(e.value)) {
                                 setSelectedCameras(e.value);
                             }
+                            console.log("selectedCameras", selectedCameras);
                         }}
-                        dataKey="Id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
+                        dataKey="_id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                         currentPageReportTemplate="Showing {first} to {last} of {totalRecords} cameras" globalFilter={globalFilter} header={header}
                         selectionMode="multiple"

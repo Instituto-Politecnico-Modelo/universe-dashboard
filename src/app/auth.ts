@@ -15,17 +15,18 @@ export const {
   providers: [
     Credentials({
       async authorize({ email, password }: any) {
-
         let user = await getUserAction(email);
-        
+
         if (user == null) {
           return null;
         }
-        let passwordsMatch = await compare(password, user[0].password!);
+    
 
+        let passwordsMatch = await compare(password, user.password);
         if (passwordsMatch) {
-          return user[0] as any;
+          return user as any;
         }
+        console.log(6);
         
       },
     }),

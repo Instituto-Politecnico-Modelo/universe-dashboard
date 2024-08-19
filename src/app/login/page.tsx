@@ -5,15 +5,15 @@ import { Button } from 'primereact/button';
 
 async function login(formData: FormData) {
   'use server';
-  let email = formData.get('email') as string;
-  let password = formData.get('password') as string;
-  if(!email || !password) {
-    throw new Error('Email and password are required');
+  let emailA = formData.get('email') as string;
+  let passwordA = formData.get('password') as string;
+  if(!emailA || !passwordA) {
+    throw new Error('Email or password are required');
   }
   await signIn('credentials', {
     redirectTo: '/protected',
-    email: email,
-    password: password,
+    email: emailA,
+    password: passwordA,
   });
 }
 
