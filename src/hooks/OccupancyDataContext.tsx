@@ -20,7 +20,7 @@ export function OccupancyDataProvider({ children }: { children: React.ReactNode 
     const [occupancyData, setOccupancyData] = useState<OccupancyData[]>([]);
 
     const updateOccupancyData = (newData: OccupancyData[]) => {
-        if (newData) setOccupancyData((prevData) => [...prevData, ...newData]);
+        if (newData) setOccupancyData((prevData) => [...newData, ...prevData]);
     };
 
     const getAllCurrentOccupancyData = () => {

@@ -4,7 +4,7 @@ import Floorplan from '@/components/Floorplan';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { ChartData } from 'chart.js';
+import { ChartData, ChartOptions } from 'chart.js';
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
 import { Chart } from 'primereact/chart';
@@ -96,12 +96,14 @@ function Dashboard() {
                     className='flex-1 h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'
                     type='line'
                     data={historicalChartData(occupancyData.occupancyData)}
-                    options={{
-                        responsive: true,
-                        mantainAspectRatio: false,
-                        // HACK: mantainAspectRatio doesn't seem to be working
-                        aspectRatio: 9,
-                    }}
+                    options={
+                        {
+                            responsive: true,
+                            mantainAspectRatio: false,
+                            // HACK: mantainAspectRatio doesn't seem to be working
+                            aspectRatio: 9,
+                        } as ChartOptions
+                    }
                 />
             </main>
         </>

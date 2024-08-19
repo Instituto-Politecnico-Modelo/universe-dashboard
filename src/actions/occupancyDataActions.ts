@@ -37,8 +37,6 @@ export async function getLatestForAllCameras(): Promise<OccupancyData[]> {
         const cameraData = await cameras.find().toArray();
 
         // merge camera data with snapshot data
-        console.log(cameraData);
-        console.log(latestSnaps);
         return latestSnaps.map((snap) => {
             const camera = cameraData.find((c) => c._id.equals(snap.latest.camera_id));
             return {
@@ -70,7 +68,7 @@ export async function getAllHisoticalData(): Promise<OccupancyData[]> {
                 },
                 {
                     $sort: {
-                        timestamp: -1,
+                        timestamp: 1,
                     },
                 },
             ])
