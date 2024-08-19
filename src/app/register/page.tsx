@@ -10,16 +10,14 @@ export default function Login() {
     'use server';
     let email = formData.get('email') as string;
     let password = formData.get('password') as string;
+    console.log(1);
     let user = await getUserAction(email);
-    if(user != null){
-      if (user.length > 0) {
-        return 'User already exists'; // TODO: Handle errors with useFormStatus
-      } else {
-        await createUserAction(email, password);
-        redirect('/login');
-      }
-    }else{
-      return 'Error creating user';
+    if (user !== null) {
+      return 'User already exists'; // TODO: Handle errors with useFormStatus
+    } else {
+      console.log(2);
+      await createUserAction(email, password);
+      redirect('/login');
     }
   }
 
