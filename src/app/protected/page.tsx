@@ -10,7 +10,7 @@ export default async function ProtectedPage() {
 
 
   return (
-     <div>
+     <div className='scrollable-container'>
         <nav className="bg-white border-gray-200 dark:bg-gray-900">
           <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="/" className="flex items-center space-x-3 rtl:space-x-reverse">
@@ -24,11 +24,10 @@ export default async function ProtectedPage() {
                   </svg>
               </button>
             </div>
-
           </div>
         </nav>
         <h1 className="text-[15px] font-semibold ml-2 text-[35px] mt-3 font-medium leading-[35px] text-white p-2">Camaras</h1>
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
+      <div className="relative shadow-md sm:rounded-lg mt-3">
         <TablaPrime />
       </div>
     </div>

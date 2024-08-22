@@ -35,7 +35,7 @@ function Dashboard() {
                     Politécnico Modelo Politécnico Modelo
                 </span>
             </InteractiveMarquee>
-            <main className='flex flex-col w-screen h-screen p-10 gap-10'>
+            <main className='flex flex-col w-screen h-full p-10 gap-10'>
                 <div className='flex flex-row w-full h-3/4 gap-10'>
                     <Chart
                         className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'

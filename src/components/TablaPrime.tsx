@@ -13,7 +13,7 @@ import { InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { constants } from "@/utils/constants";
-import { createCameraAction, deleteCameraAction, getAllCameras, updateCameraAction } from '@/actions/cameraActions';
+import { createCameraAction, deleteCameraAction, getAllCameras, updateCameraAction   } from '@/actions/cameraActions';
 import { WithId } from 'mongodb';
 import { Camera } from '@/types/camera';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
@@ -43,19 +43,10 @@ export default function CamerasDemo(){
     const [getCams, setGetCams] = useState<boolean>(false); //
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<Camera[]>>(null);
-/*
-    useEffect( () => { 
-        createCameraAction(createCamera);
-        setCreateCamera(emptyCamera);
-    }, [createCamera]);
-*/
-
-
      useEffect(() => {
         conseguirCams();
         setGetCams(false);
     }, [getCams]);
-
 
     const conseguirCams = async () => {
         let result = await getAllCameras();
@@ -84,7 +75,6 @@ export default function CamerasDemo(){
     };
 
     const saveCamera = () => {
-        //setSubmitted(true);
         if (camera.name.trim()) {
             let aux2: Camera[];
             if(cameras == null){
@@ -94,7 +84,6 @@ export default function CamerasDemo(){
             }
             let _cameras = [...aux2];
             let _camera = { ...camera };
-
           
             const index = findIndexById(camera._id);
 
@@ -124,14 +113,6 @@ export default function CamerasDemo(){
                 console.log("camara", cam);
                 createCameraAction(cam);
             }
-            /*result.then((response: HttpResponse<TypesCamara[]>) => {
-                if(response.status == 200 || response.status == 201){
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Cameras Updated', life: 3000 });
-                }else{
-                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
-                }
-            });   */
-           //setGetCams(true);
         }
         setGetCams(true);
     };
@@ -153,15 +134,10 @@ export default function CamerasDemo(){
         setDeleteCameraDialog(false);
         setCamera(emptyCamera);
         deleteCameraAction(camera._id);
-   /*     let result = api.camaras.camarasDelete(camera._id);
-        result.then((response: HttpResponse<TypesCamara[]>) => {
-            if(response.status == 200 || response.status == 201){
+   /*   
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
-            }else{
                 toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error deleting the camera', life: 3000 });
-            }
-        });           
-     */ //  setGetCams(true);
+     */ 
         setGetCams(false);
     };
 
@@ -198,16 +174,9 @@ export default function CamerasDemo(){
 
         setCameras(_cameras);
         setDeleteCamerasDialog(false);
-     /*   selectedCameras.forEach((camera) => {
-            let result = api.camaras.camarasDelete(camera._id);
-            result.then((response: HttpResponse<TypesCamara[]>) => {
-                if(response.status == 200 || response.status == 201){
+     /*  
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
-                }else{
                     toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
-                }
-            });   
-        });
        */
       console.log("selectedCameras", selectedCameras);
         selectedCameras.forEach((camera) => {
@@ -233,10 +202,8 @@ export default function CamerasDemo(){
     const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
         const val = e.value ?? 0;
         let _camera = { ...camera };
-
         // @ts-ignore
         _camera[name] = val;
-
         setCamera(_camera);
     };
 
@@ -311,7 +278,7 @@ export default function CamerasDemo(){
                         selectionMode="multiple"
                 >
                     <Column selectionMode="multiple" exportable={false}></Column>
-                    <Column field="name" header="Name" sortable style={{ minWidth: '12%' }}></Column>
+                    <Column field="name" header="Name" sortable  style={{ minWidth: '12%' }}></Column>
                     <Column field="url" header="Url" sortable style={{ minWidth: '12%' }}></Column>
                     <Column field="location" header="Location" sortable style={{ minWidth: '12%' }}></Column>
                     <Column field="threshold" header="Threshold" sortable style={{ minWidth: '12%' }}></Column>
