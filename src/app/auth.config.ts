@@ -19,7 +19,6 @@ export const authConfig = {
       } else if (isLoggedIn) {
         return Response.redirect(new URL('/protected', nextUrl));
       }
-
       return true;
     },
   },

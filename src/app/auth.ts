@@ -16,17 +16,17 @@ export const {
     Credentials({
       async authorize({ email, password }: any) {
         let user = await getUserAction(email);
-
         if (user == null) {
           return null;
         }
-    
-
         let passwordsMatch = await compare(password, user.password);
         if (passwordsMatch) {
           return user as any;
+        }else{
+          return null;
         }
-        console.log(6);
+
+
         
       },
     }),
