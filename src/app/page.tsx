@@ -4,11 +4,10 @@ import Floorplan from '@/components/Floorplan';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { ChartData, ChartOptions } from 'chart.js';
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
-import { Chart } from 'primereact/chart';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { Doughnut, getElementAtEvent, Line } from 'react-chartjs-2';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
@@ -25,7 +24,10 @@ function Dashboard() {
     const historicalDataQuery = useQuery({
         queryKey: ['historicalData'],
         queryFn: async () => await getAllHisoticalData(),
+        refetchOnReconnect: true,
     });
+
+    const historicalChartRef = useRef(null);
 
     useEffect(() => {
         if (!data) return;
@@ -36,7 +38,7 @@ function Dashboard() {
     }, [data]);
 
     useEffect(() => {
-        if (historicalDataQuery.data) occupancyData.updateOccupancyData(historicalDataQuery.data);
+        if (historicalDataQuery.data) occupancyData.setOccupancyData(historicalDataQuery.data);
     }, [historicalDataQuery.data]);
 
     if (isLoading) {
@@ -51,6 +53,18 @@ function Dashboard() {
         return <div className='centered'>Error: {error.message}</div>;
     }
 
+    const historicalChartClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+        // HACK: i couldn't find a way to make typescript happy
+        const chart: any = historicalChartRef.current;
+        // get first element at the event
+        const element = getElementAtEvent(chart, event).at(0);
+        if (!element) return;
+        // get from occupancyData the data for the selected timestamp
+        // the element index is reversed because the data is reversed
+        const data = occupancyData.occupancyData.toReversed()[element.index];
+        console.log(data);
+    };
+
     return (
         <>
             <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
@@ -64,11 +78,11 @@ function Dashboard() {
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
                 <div className='flex flex-row w-full h-3/4 gap-4'>
-                    <Chart
-                        className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'
-                        type='doughnut'
-                        data={currentChartData(occupancyData.getAllCurrentOccupancyData())}
-                        options={{
+                    <div className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'>
+                        <Doughnut
+                            data={currentChartData(occupancyData.getAllCurrentOccupancyData())}
+                            options={{
+                                /*
                             legend: {
                                 display: false,
                                 position: 'right',
@@ -76,41 +90,48 @@ function Dashboard() {
                                 labels: {
                                     color: 'white',
                                 },
-                            },
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: 'Ocupación actual',
-                                    color: '#fff',
+                            },*/
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Ocupación actual',
+                                        color: '#fff',
+                                    },
                                 },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    </div>
                     <Floorplan
                         className='flex-1 border-sky-700 border-2 rounded-lg'
                         data={occupancyData.getAllCurrentOccupancyData()}
                     />
                 </div>
                 {/* historical line chart for all cameras (total count) */}
-                <Chart
-                    className='flex-1 h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'
-                    type='line'
-                    data={historicalChartData(occupancyData.occupancyData)}
-                    options={
-                        {
+                <div className='h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'>
+                    <Line
+                        className=''
+                        onClick={historicalChartClick}
+                        ref={historicalChartRef}
+                        data={historicalChartData(occupancyData.occupancyData)}
+                        options={{
                             responsive: true,
-                            mantainAspectRatio: false,
+                            maintainAspectRatio: false,
                             // HACK: mantainAspectRatio doesn't seem to be working
-                            aspectRatio: 9,
-                        } as ChartOptions
-                    }
-                />
+                            // aspectRatio: 9,
+                            elements: {
+                                point: {
+                                    radius: 0,
+                                },
+                            },
+                        }}
+                    />
+                </div>
             </main>
         </>
     );
 }
 
-function currentChartData(data: OccupancyData[]): ChartData {
+function currentChartData(data: OccupancyData[]) {
     return {
         datasets: [
             {
@@ -134,18 +155,19 @@ function currentChartData(data: OccupancyData[]): ChartData {
     };
 }
 
-function historicalChartData(data: OccupancyData[]): ChartData {
+function historicalChartData(data: OccupancyData[]) {
     return {
         datasets: [
             {
                 label: 'Ocupación total',
-                data: data.map((d) => d.personas),
+                data: data.toReversed().map((d) => d.personas),
                 backgroundColor: ['#7dd3fc'],
                 borderColor: '#0369a1',
+                tension: 0.4,
                 fill: true,
             },
         ],
-        labels: data.map((d) => d.timestamp.toTimeString().slice(0, 5)),
+        labels: data.toReversed().map((d) => d.timestamp.toTimeString().slice(0, 5)),
     };
 }
 

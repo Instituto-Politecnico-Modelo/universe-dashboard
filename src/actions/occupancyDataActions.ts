@@ -68,8 +68,11 @@ export async function getAllHisoticalData(): Promise<OccupancyData[]> {
                 },
                 {
                     $sort: {
-                        timestamp: 1,
+                        timestamp: -1,
                     },
+                },
+                {
+                    $limit: 1440,
                 },
             ])
             .toArray();
@@ -105,7 +108,7 @@ export async function getLatestForCamera(camera_id: string): Promise<OccupancyDa
                 },
                 {
                     $sort: {
-                        timestamp: 1,
+                        timestamp: -1,
                     },
                 },
                 {

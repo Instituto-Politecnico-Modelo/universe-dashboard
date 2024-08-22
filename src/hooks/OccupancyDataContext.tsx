@@ -5,6 +5,7 @@ type OccupancyDataContextType = {
     updateOccupancyData: (newData: OccupancyData[]) => void;
     getAllCurrentOccupancyData: () => OccupancyData[];
     getAllDataForLocation: (location: string) => OccupancyData[];
+    setOccupancyData: (data: OccupancyData[]) => void;
 };
 
 const OccupancyDataContext = createContext<OccupancyDataContextType>({
@@ -12,6 +13,7 @@ const OccupancyDataContext = createContext<OccupancyDataContextType>({
     updateOccupancyData: () => {},
     getAllCurrentOccupancyData: () => [],
     getAllDataForLocation: () => [],
+    setOccupancyData: () => {},
 });
 
 export const useOccupancyData = () => useContext(OccupancyDataContext);
@@ -41,7 +43,13 @@ export function OccupancyDataProvider({ children }: { children: React.ReactNode 
 
     return (
         <OccupancyDataContext.Provider
-            value={{ occupancyData, updateOccupancyData, getAllCurrentOccupancyData, getAllDataForLocation }}
+            value={{
+                occupancyData,
+                updateOccupancyData,
+                getAllCurrentOccupancyData,
+                getAllDataForLocation,
+                setOccupancyData,
+            }}
         >
             {children}
         </OccupancyDataContext.Provider>
