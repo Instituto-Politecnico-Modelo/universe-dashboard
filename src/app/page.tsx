@@ -1,13 +1,14 @@
 'use client';
-import { getAllHisoticalData, getLatestForAllCameras } from '@/actions/occupancyDataActions';
+import { getBatchesSince, getLatestForAllCameras } from '@/actions/occupancyDataActions';
 import Floorplan from '@/components/Floorplan';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
+import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useRef } from 'react';
-import { Doughnut, getElementAtEvent, Line } from 'react-chartjs-2';
+import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
@@ -23,7 +24,12 @@ function Dashboard() {
 
     const historicalDataQuery = useQuery({
         queryKey: ['historicalData'],
-        queryFn: async () => await getAllHisoticalData(),
+        queryFn: async () => {
+            const date = new Date();
+            date.setDate(date.getDate() - 1);
+            const ret = await getBatchesSince(date);
+            return ret;
+        },
         refetchOnReconnect: true,
     });
 
@@ -33,8 +39,7 @@ function Dashboard() {
         if (!data) return;
 
         // TODO: evaluar si es mejor tener un hash map para evitar duplicados
-        if (occupancyData.occupancyData.find((d) => d._id === data[0]._id)) return;
-        occupancyData.updateOccupancyData(data);
+        if (data._id !== occupancyData.occupancyData[0]?._id) occupancyData.updateOccupancyData([data]);
     }, [data]);
 
     useEffect(() => {
@@ -58,11 +63,14 @@ function Dashboard() {
         const chart: any = historicalChartRef.current;
         // get first element at the event
         const element = getElementAtEvent(chart, event).at(0);
-        if (!element) return;
+        if (!element) {
+            occupancyData.setSelectedBatch(undefined);
+            return;
+        }
         // get from occupancyData the data for the selected timestamp
         // the element index is reversed because the data is reversed
         const data = occupancyData.occupancyData.toReversed()[element.index];
-        console.log(data);
+        occupancyData.setSelectedBatch(data);
     };
 
     return (
@@ -80,17 +88,12 @@ function Dashboard() {
                 <div className='flex flex-row w-full h-3/4 gap-4'>
                     <div className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'>
                         <Doughnut
-                            data={currentChartData(occupancyData.getAllCurrentOccupancyData())}
+                            data={currentChartData(
+                                occupancyData.selectedBatch
+                                    ? occupancyData.selectedBatch.data
+                                    : occupancyData.getAllCurrentOccupancyData().data,
+                            )}
                             options={{
-                                /*
-                            legend: {
-                                display: false,
-                                position: 'right',
-                                color: 'white',
-                                labels: {
-                                    color: 'white',
-                                },
-                            },*/
                                 plugins: {
                                     title: {
                                         display: true,
@@ -103,28 +106,34 @@ function Dashboard() {
                     </div>
                     <Floorplan
                         className='flex-1 border-sky-700 border-2 rounded-lg'
-                        data={occupancyData.getAllCurrentOccupancyData()}
+                        data={
+                            occupancyData.selectedBatch
+                                ? occupancyData.selectedBatch.data
+                                : occupancyData.getAllCurrentOccupancyData().data
+                        }
                     />
                 </div>
                 {/* historical line chart for all cameras (total count) */}
                 <div className='h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'>
-                    <Line
-                        className=''
-                        onClick={historicalChartClick}
-                        ref={historicalChartRef}
-                        data={historicalChartData(occupancyData.occupancyData)}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            // HACK: mantainAspectRatio doesn't seem to be working
-                            // aspectRatio: 9,
-                            elements: {
-                                point: {
-                                    radius: 0,
+                    {historicalDataQuery.isLoading ? ( // show primereact skeleton
+                        <Skeleton width='100%' height='100%' />
+                    ) : (
+                        <Line
+                            className=''
+                            onClick={historicalChartClick}
+                            ref={historicalChartRef}
+                            data={historicalChartData(occupancyData.occupancyData)}
+                            options={{
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                elements: {
+                                    point: {
+                                        radius: 0,
+                                    },
                                 },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+                    )}
                 </div>
             </main>
         </>
@@ -139,8 +148,15 @@ function currentChartData(data: OccupancyData[]) {
                 data: data.map((d) => d.personas),
                 backgroundColor: [
                     // tailwind colors
-                    // sky-400
-                    '#7dd3fc',
+                    '#7dd3fc', // sky-300
+                    '#93c5fd', // sky-400
+                    '#a3bffa', // sky-500
+                    '#818cf8', // violet-400
+                    '#6366f1', // indigo-500
+                    '#4f46e5', // indigo-600
+                    '#4338ca', // indigo-700
+                    '#3730a3', // indigo-800
+                    '#312e81', // indigo-900
                 ],
                 borderColor: '#0369a1', // sky-900
             },
@@ -155,19 +171,19 @@ function currentChartData(data: OccupancyData[]) {
     };
 }
 
-function historicalChartData(data: OccupancyData[]) {
+function historicalChartData(batch: OccupancyBatch[]) {
     return {
         datasets: [
             {
                 label: 'Ocupación total',
-                data: data.toReversed().map((d) => d.personas),
+                data: batch.toReversed().map((d) => d.data.reduce((acc, curr) => acc + curr.personas, 0)),
                 backgroundColor: ['#7dd3fc'],
                 borderColor: '#0369a1',
                 tension: 0.4,
                 fill: true,
             },
         ],
-        labels: data.toReversed().map((d) => d.timestamp.toTimeString().slice(0, 5)),
+        labels: batch.toReversed().map((d) => d.timestamp.toTimeString().slice(0, 5)),
     };
 }
 

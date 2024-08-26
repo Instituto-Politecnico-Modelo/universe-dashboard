@@ -1,6 +1,6 @@
 interface Batch {
     _id: string;
-    threshold: number;
+    timestamp: Date;
 }
 
 interface OccupancyBatch extends Batch {
