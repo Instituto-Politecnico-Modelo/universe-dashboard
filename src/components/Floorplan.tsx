@@ -1,12 +1,19 @@
 'use client';
-import { TypesData } from '@/services/dataApi';
 import { calculateGradientFromValue } from '@/services/utils';
-import { OrbitControls, PerspectiveCamera, useGLTF } from '@react-three/drei';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 
-export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; data: OccupancyData[]; props?: object }) {
+export function MeshComponent({
+    hovered,
+    data,
+    ...props
+}: {
+    hovered: boolean;
+    data: OccupancyData[];
+    props?: object;
+}) {
     const { scene } = useGLTF('/scene.gltf');
 
     // rotate
@@ -126,35 +133,22 @@ export function MeshComponent({ hovered, data, ...props }: { hovered: boolean; d
         });
     }, [...data.values()]);
 
-    // find "camera" object and use it as the camera
-    const camera = scene.getObjectByName('PerspectiveCamera');
-    if (camera) {
-        console.log('camera found');
-        const cameraObject = camera as THREE.PerspectiveCamera;
-        cameraObject.aspect = window.innerWidth / window.innerHeight;
-        cameraObject.updateProjectionMatrix();
-    }
-
-    /*
-    // add a cube mesh at  0,0,0
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
-    mesh.name = "cube";
-
-    const patioArea = scene.getObjectByName("patio_area");
-    if (patioArea) {
-        const patioAreaMesh = patioArea as THREE.Mesh;
-        patioAreaMesh.material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.5 });
-
-    }
-    scene.add(mesh);
-    */
+    // set camerera location and rotation using FloorplanCamera object
+    useThree(({ camera }) => {
+        const cameraObject = scene.getObjectByName('FloorplanCamera') as THREE.PerspectiveCamera;
+        // set it only if it exists and it is on the initial position
+        // HACK: i have no idea why this is the initial position
+        if (cameraObject && camera.position.equals(new THREE.Vector3(0, 3.061616997868383e-16, 5))) {
+            camera.position.copy(cameraObject.position);
+            camera.rotation.copy(cameraObject.rotation);
+        }
+    });
 
     return <primitive object={scene} {...props} />;
 }
 
 function Floorplan({ data, className, ...props }: { data: OccupancyData[]; className?: string; props?: object }) {
     const [hovered, setHovered] = useState(false);
-
     return (
         <Canvas className={className} onMouseEnter={() => setHovered(true)} onMouseOut={() => setHovered(false)}>
             <OrbitControls />

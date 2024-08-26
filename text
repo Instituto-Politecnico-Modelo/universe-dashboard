@@ -1,9 +1,0 @@
-{
-  "_id": {
-    "$oid": "66c39e9c8d83c6d1e3f063ef"
-  },
-  "name": "jose",
-  "url": "httpjose",
-  "location": "aulajose",
-  "threshold": 534
-}

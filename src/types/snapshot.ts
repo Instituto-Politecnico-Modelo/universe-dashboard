@@ -1,9 +1,16 @@
 interface Snapshot {
-    _id: string
+    _id: string;
     filename: string;
-    timeStamp: Date;
+    timestamp: Date;
+    url: string;
     camera_id: string;
     personas: number;
+    batch_id: string;
+}
+
+interface OccupancyData extends Snapshot {
+    location: string;
+    threshold: number;
 }
 /*
 const snapSchema = new MongoClient.Schema({

@@ -10,7 +10,6 @@
     --circle-size: 80%;
     --blending: hard-light;
   }
-  
   @keyframes moveInCircle {
     0% {
       transform: rotate(0deg);
@@ -56,6 +55,7 @@
     background: linear-gradient(40deg, var(--color-bg1), var(--color-bg2));
     top: 0;
     left: 0;
+    z-index: -5;
   
     svg {
       display: none;

@@ -1,4 +1,4 @@
-export interface Camera{
+interface Camera {
     _id: string;
     name: string;
     url: string;
