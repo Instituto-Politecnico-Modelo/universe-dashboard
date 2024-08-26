@@ -7,6 +7,7 @@ import { getAllUsersAction, getUserAction, updateUserAction } from '@/actions/us
 
 import { InputSwitch, InputSwitchChangeEvent } from "primereact/inputswitch";
 function cambiarRol(email: string, role: string) {
+    
     updateUserAction(email, role);
     console.log("Email: " + email + " Role to: " + role);
 }
@@ -21,12 +22,19 @@ function Slider(role : string, email : string) {
     useEffect(() => {
         cambiarRol(email, checked ? "authorized" : "unauthorized");
     }, [checked]);
-
-    return (
-        <div className="card flex justify-content-center">
-            <InputSwitch checked={checked} onChange={(e: InputSwitchChangeEvent) => setChecked(e.value)} />
-        </div>
-    );
+    if(email == "admin@gmail.com"){
+        return (
+            <div className="card flex justify-content-center">
+                <InputSwitch disabled checked={checked} onChange={(e: InputSwitchChangeEvent) => setChecked(e.value)} disabled />
+            </div>
+        );
+    }else{ 
+        return (
+            <div className="card flex justify-content-center">
+                <InputSwitch checked={checked} onChange={(e: InputSwitchChangeEvent) => setChecked(e.value)} />
+            </div>
+        );
+    }
 }
         
 interface User {

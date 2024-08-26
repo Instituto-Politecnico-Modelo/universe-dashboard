@@ -1,13 +1,34 @@
 'use server';
 import client from "@/db";
 import { genSaltSync, hashSync } from 'bcrypt-ts';
+
+
+const adminUser = {
+    email: process.env.A_EMAIL,
+    password: process.env.A_PASS,
+    role: "authorized"
+};
+if(adminUser.email && adminUser.password && await getUserAction(adminUser.email) == null){
+    await createUserAction(adminUser.email, adminUser.password);
+    console.log("Admin user created");
+    updateUserAction(adminUser.email, "authorized");
+}else{
+    console.error("Admin user not created");
+}
+
+
 export async function getAllUsersAction() {
     let isConnected = false;
     try {
         await client.connect();
         isConnected = true;
         const users = await client.db('galaxy').collection('users');
-        return await users.find().toArray();
+        let result = await users.find().toArray();
+        let aux: any[] = [];
+        for (let user of result){
+            aux = [...aux, {_id: String(user._id), email: user.email, role: user.role}];
+        }
+        return await aux;
     } catch (error) {
         console.error('Error connecting to the database', error);
     } finally {
@@ -42,6 +63,7 @@ export async function getUserAction(email: string) {
         return await users.findOne({ email });
     } catch (error) {
         console.error('Error connecting to the database', error);
+        return null;
     } finally {
         if (isConnected) {
             await client.close();
