@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { motion, useSpring, useTransform, PanInfo, MotionValue, useMotionValue } from 'framer-motion';
-import { useRafLoop } from 'react-use';
+'use client';
 import { useWindowSize } from '@react-hook/window-size';
+import { motion, MotionValue, useSpring, useTransform } from 'framer-motion';
+import React, { useEffect, useRef } from 'react';
+import { useRafLoop } from 'react-use';
 
 /**
  * @see https://14islands.com/blog/interactive-marquee-with-framer-motion/
@@ -140,9 +141,9 @@ export const InteractiveMarquee: React.FC<MarqueeProps> = (props) => {
                 className={className}
                 ref={marqueeRef}
                 style={{ skewX, rotate }}
-                drag='x'
-                dragPropagation={true}
-                dragConstraints={{ left: 0, right: 0 }}
+                //                drag='x'
+                //                dragPropagation={true}
+                //                dragConstraints={{ left: 0, right: 0 }}
             >
                 <div className='flex align-middle'>
                     <MarqueeItem speed={speedSpring}>{children}</MarqueeItem>
