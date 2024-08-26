@@ -131,6 +131,10 @@ function Dashboard() {
                                         radius: 0,
                                     },
                                 },
+                                interaction: {
+                                    intersect: false,
+                                    mode: 'x',
+                                },
                             }}
                         />
                     )}

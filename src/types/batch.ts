@@ -1,5 +1,6 @@
 interface Batch {
     _id: string;
+    personas: number;
     timestamp: Date;
 }
 

@@ -9,7 +9,9 @@ export const getLatestForAllCameras = (): Promise<OccupancyBatch> =>
         // this function should find the latest batch and return it with the data for all associated snaps
 
         // find latest batch_id from latest snap
-        const batch_id = await snapsCollection.findOne({}, { sort: { timestamp: -1 } }).then((snap) => snap?.batch_id);
+        const batch_id = await snapsCollection
+            .findOne({ personas: { $exists: true } }, { sort: { timestamp: -1 } })
+            .then((snap) => snap?.batch_id);
 
         // find the batch
         const batch = await batchesCollection.findOne({ _id: batch_id });
@@ -44,7 +46,7 @@ export const getBatchesSince = (startDate: Date): Promise<OccupancyBatch[]> =>
 
         // find the batches and sort them by timestamp
         const batches = await batchesCollection
-            .find({ timestamp: { $gte: startDate } }, { sort: { timestamp: -1 } })
+            .find({ timestamp: { $gte: startDate }, personas: { $exists: true } }, { sort: { timestamp: -1 } })
             .toArray();
         const snaps = await snapsCollection
             .find({ timestamp: { $gte: startDate }, personas: { $exists: true }, batch_id: { $exists: true } })
@@ -57,6 +59,7 @@ export const getBatchesSince = (startDate: Date): Promise<OccupancyBatch[]> =>
                 acc.push({
                     _id: curr._id.toString(),
                     timestamp: curr.timestamp,
+                    personas: curr.personas,
                     data: batchData.map((snap) => {
                         const camera = cameras.find((c) => c._id.toString() === snap.camera_id.toString());
                         return {
