@@ -3,40 +3,31 @@ import React, { useState, useEffect, useRef } from 'react';
 import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Api, HttpResponse, TypesCamara } from "@/services/api";
+
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
-import { FileUpload } from 'primereact/fileupload';
 import { Toolbar } from 'primereact/toolbar';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
-import { RadioButton, RadioButtonChangeEvent } from 'primereact/radiobutton';
-import { InputNumber,InputNumberValueChangeEvent } from 'primereact/inputnumber';
+import { InputNumberValueChangeEvent } from 'primereact/inputnumber';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { constants } from "@/utils/constants";
-import { PrimeReactProvider, PrimeReactContext } from 'primereact/api';
-import { Console } from 'console';
-import mongoose, { isValidObjectId } from 'mongoose';
-import { Result } from 'postcss';
+import { createCameraAction, deleteCameraAction, getAllCameras, updateCameraAction   } from '@/actions/cameraActions';
+import { WithId } from 'mongodb';
+import { Camera } from '@/types/camera';
+import { update } from 'three/examples/jsm/libs/tween.module.js';
 
-
-interface Camera {
-    id: string ;
-    name: string;
-    location: string;
-    url: string;
-    threshold: number;
-}
 export default function CamerasDemo(){
     let emptyCamera: Camera = {
-        id: '',
+        _id: '',
         name: '',
         location: '',
         url: '',
         threshold: 0,
     };
-
+    
+    
 
 
     const [cameras, setCameras] = useState<Camera[]>([]);
@@ -48,19 +39,20 @@ export default function CamerasDemo(){
     const [selectedCameras, setSelectedCameras] = useState<Camera[]>([]);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [globalFilter, setGlobalFilter] = useState<string>('');
+    const [createCamera, setCreateCamera] = useState<Camera>(emptyCamera); //
+    const [getCams, setGetCams] = useState<boolean>(false); //
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<Camera[]>>(null);
-    const api = new Api({ baseUrl: constants.API_URL });
+     useEffect(() => {
+        conseguirCams();
+        setGetCams(false);
+    }, [getCams]);
 
-    useEffect(() => {
-        cargar();
-        setReloadData(false);
-    }, [reloadData]);
-
-    const cargar = () => {
-        api.camaras.camarasList().then((response: HttpResponse<Camera[], any>) => {
-            setCameras(response.data);    
-          });
+    const conseguirCams = async () => {
+        let result = await getAllCameras();
+        if(result){
+            setCameras(result);
+        }
     }
 
     const openNew = () => {
@@ -83,8 +75,6 @@ export default function CamerasDemo(){
     };
 
     const saveCamera = () => {
-        setSubmitted(true);
-
         if (camera.name.trim()) {
             let aux2: Camera[];
             if(cameras == null){
@@ -94,31 +84,37 @@ export default function CamerasDemo(){
             }
             let _cameras = [...aux2];
             let _camera = { ...camera };
-
           
-            const index = findIndexById(camera.id);
+            const index = findIndexById(camera._id);
 
             _cameras[index] = _camera;
              setCameras(_cameras);
             setCameraDialog(false);
             setCamera(emptyCamera);
-            var aux: number = parseInt(camera.threshold.toString());            
-            let result = api.camara.camaraCreate({
-                name: camera.name,
-                location: camera.location,
-                url: camera.url,
-                threshold: aux,
-                id: camera.Id   ///si el id de la camara es "000000000000000000000000"
-            });
-            result.then((response: HttpResponse<TypesCamara[]>) => {
-                if(response.status == 200 || response.status == 201){
-                    toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Cameras Updated', life: 3000 });
-                }else{
-                    toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
-                }
-            });   
-            setReloadData(true);
+            var aux: number = parseInt(camera.threshold.toString());   
+            if(camera._id != ''){
+                let cam ={
+                    _id: camera._id,
+                    name: camera.name,
+                    location: camera.location,
+                    url: camera.url,
+                    threshold: aux
+                };
+                updateCameraAction(cam);
+            }
+            else{      
+                let cam ={
+                    _id: "none",
+                    name: camera.name,
+                    location: camera.location,
+                    url: camera.url,
+                    threshold: aux
+                };
+                console.log("camara", cam);
+                createCameraAction(cam);
+            }
         }
+        setGetCams(true);
     };
 
     const editCamera = (camera: Camera) => {
@@ -132,20 +128,17 @@ export default function CamerasDemo(){
     };
 
     const deleteCamera = () => {
-        let _cameras = cameras.filter((val) => val.id !== camera.id);
+        let _cameras = cameras.filter((val) => val._id !== camera._id);
 
         setCameras(_cameras);
         setDeleteCameraDialog(false);
         setCamera(emptyCamera);
-        let result = api.camaras.camarasDelete(camera.Id);//esto dice que esta mal, pero esta bien (anda igual)
-        result.then((response: HttpResponse<TypesCamara[]>) => {
-            if(response.status == 200 || response.status == 201){
+        deleteCameraAction(camera._id);
+   /*   
                 toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
-            }else{
                 toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error deleting the camera', life: 3000 });
-            }
-        });           
-        setReloadData(true);
+     */ 
+        setGetCams(false);
     };
 
     const findIndexById = (id: string) => {
@@ -157,7 +150,7 @@ export default function CamerasDemo(){
             aux = cameras.length;
         }
         for (let i = 0; i < aux; i++) {
-            if (cameras[i].id === id) {
+            if (cameras[i]._id === id) {
                 index = i;
                 break;
             }
@@ -181,18 +174,17 @@ export default function CamerasDemo(){
 
         setCameras(_cameras);
         setDeleteCamerasDialog(false);
-        setSelectedCameras([]);
-        selectedCameras.forEach((camera) => {
-            let result = api.camaras.camarasDelete(camera.Id);
-            result.then((response: HttpResponse<TypesCamara[]>) => {
-                if(response.status == 200 || response.status == 201){
+     /*  
                     toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'Camera Deleted', life: 3000 });
-                }else{
                     toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Error creating the camera', life: 3000 });
-                }
-            });   
+       */
+      console.log("selectedCameras", selectedCameras);
+        selectedCameras.forEach((camera) => {
+            console.log("camera", camera);
+            deleteCameraAction(camera._id);
         });
-        setReloadData(true);
+        setSelectedCameras([]);
+       setGetCams(true);
     };
 
 
@@ -200,7 +192,6 @@ export default function CamerasDemo(){
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>, name: string) => {
         const val = (e.target && e.target.value) || '';
         let _camera = { ...camera };
-
         // @ts-ignore
         _camera[name] = val;
 
@@ -211,24 +202,22 @@ export default function CamerasDemo(){
     const onInputNumberChange = (e: InputNumberValueChangeEvent, name: string) => {
         const val = e.value ?? 0;
         let _camera = { ...camera };
-
         // @ts-ignore
         _camera[name] = val;
-
         setCamera(_camera);
     };
 
     const leftToolbarTemplate = () => {
         return (
             <div className="flex flex-wrap gap-2">
-                <Button label="New" icon="pi pi-plus" severity="success" onClick={openNew} />
-                <Button label="Delete" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedCameras || !selectedCameras.length} />
+                <Button label="Nuevo" icon="pi pi-plus" severity="success" onClick={openNew} />
+                <Button label="Borrar" icon="pi pi-trash" severity="danger" onClick={confirmDeleteSelected} disabled={!selectedCameras || !selectedCameras.length} />
             </div>
         );
     };
 
     const rightToolbarTemplate = () => {
-        return <Button label="Export" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />;
+        return <Button label="Exportar" icon="pi pi-upload" className="p-button-help" onClick={exportCSV} />;
     };
 
  
@@ -247,26 +236,26 @@ export default function CamerasDemo(){
         <div className="flex flex-wrap gap-2 align-items-center justify-content-between">
             <IconField iconPosition="left">
                 <InputIcon className="pi pi-search" />
-                 <InputText type="search" placeholder="Search..." onInput={(e) => {const target = e.target as HTMLInputElement; setGlobalFilter(target.value);}}  />
+                 <InputText type="search" placeholder="Buscar..." onInput={(e) => {const target = e.target as HTMLInputElement; setGlobalFilter(target.value);}}  />
             </IconField>
         </div>
     );
     const cameraDialogFooter = (
         <React.Fragment>
-            <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" onClick={saveCamera} />
+            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
+            <Button label="Guardar" icon="pi pi-check" onClick={saveCamera} />
         </React.Fragment>
     );
     const deleteCameraDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteCameraDialog} />
-            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteCamera} />
+            <Button label="Si" icon="pi pi-check" severity="danger" onClick={deleteCamera} />
         </React.Fragment>
     );
     const deleteCamerasDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hidedeleteCamerasDialog} />
-            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteSelectedCameras} />
+            <Button label="Si" icon="pi pi-check" severity="danger" onClick={deleteSelectedCameras} />
         </React.Fragment>
     );
 
@@ -281,70 +270,71 @@ export default function CamerasDemo(){
                             if (Array.isArray(e.value)) {
                                 setSelectedCameras(e.value);
                             }
+                            console.log("selectedCameras", selectedCameras);
                         }}
-                        dataKey="Id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
+                        dataKey="_id"  paginator rows={10} rowsPerPageOptions={[5, 10, 25]}
                         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} cameras" globalFilter={globalFilter} header={header}
+                        currentPageReportTemplate="Mostrando {first} hasta {last} de {totalRecords} camaras" globalFilter={globalFilter} header={header}
                         selectionMode="multiple"
                 >
                     <Column selectionMode="multiple" exportable={false}></Column>
-                    <Column field="name" header="Name" sortable style={{ minWidth: '12%' }}></Column>
+                    <Column field="name" header="Nombre" sortable  style={{ minWidth: '12%' }}></Column>
                     <Column field="url" header="Url" sortable style={{ minWidth: '12%' }}></Column>
-                    <Column field="location" header="Location" sortable style={{ minWidth: '12%' }}></Column>
-                    <Column field="threshold" header="Threshold" sortable style={{ minWidth: '12%' }}></Column>
+                    <Column field="location" header="Ubicación" sortable style={{ minWidth: '12%' }}></Column>
+                    <Column field="threshold" header="Umbral" sortable style={{ minWidth: '12%' }}></Column>
 
                     <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12%' }}></Column>
                 </DataTable>
             </div>
 
-            <Dialog visible={cameraDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Camera Details" modal className="p-fluid" footer={cameraDialogFooter} onHide={hideDialog}>
+            <Dialog visible={cameraDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Detalles de la camara" modal className="p-fluid" footer={cameraDialogFooter} onHide={hideDialog}>
                <div className="field">
                     <label htmlFor="name" className="font-bold">
-                        Name
+                        Nombre
                     </label>
                     <InputText id="name" value={camera.name} onChange={(e) => onInputChange(e, 'name')} required autoFocus className={classNames({ 'p-invalid': submitted && !camera.name })} />
-                    {submitted && !camera.name && <small className="p-error">Name is required.</small>}
+                    {submitted && !camera.name && <small className="p-error">Se requiere el nombre.</small>}
                 </div>
                 <div className="field">
                     <label htmlFor="url" className="font-bold">
                         Url
                     </label>
                     <InputText id="url" value={camera.url} onChange={(e) => onInputChange(e, 'url')} required autoFocus className={classNames({ 'p-invalid': submitted && !camera.url })} />
-                    {submitted && !camera.url && <small className="p-error">Url is required.</small>}
+                    {submitted && !camera.url && <small className="p-error">Se requiere la URL.</small>}
                 </div>
                 <div className="field">
                     <label htmlFor="location" className="font-bold">
-                        Location
+                        Ubicación
                     </label>
                     <InputText id="location" value={camera.location} onChange={(e) => onInputChange(e, 'location')} required autoFocus className={classNames({ 'p-invalid': submitted && !camera.location })} />
-                    {submitted && !camera.location && <small className="p-error">Location is required.</small>}
+                    {submitted && !camera.location && <small className="p-error">Se requiere la ubicación.</small>}
                 </div>
                 <div className="field">
                     <label htmlFor="threshold" className="font-bold">
-                        Threshold
+                        Umbral
                     </label>
                     <InputText id="name" keyfilter="int" value={String(camera.threshold)} onChange={(e) => onInputChange(e, 'threshold')} required autoFocus className={classNames({ 'p-invalid': submitted && !camera.threshold })} />
                                         
-                    {submitted && !camera.threshold && <small className="p-error">Threshold is required.</small>}
+                    {submitted && !camera.  threshold && <small className="p-error">Se requiere el Umbral.</small>}
                 </div>
     
             </Dialog>
 
-            <Dialog visible={deleteCameraDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteCameraDialogFooter} onHide={hideDeleteCameraDialog}>
+            <Dialog visible={deleteCameraDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteCameraDialogFooter} onHide={hideDeleteCameraDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                     {camera && (
                         <span>
-                            Are you sure you want to delete <b>{camera.name}</b>?
+                            Estas seguro de que quiere borrar <b>{camera.name}</b>?
                         </span>
                     )}
                 </div>
             </Dialog>
-
-            <Dialog visible={deleteCamerasDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirm" modal footer={deleteCamerasDialogFooter} onHide={hidedeleteCamerasDialog}>
+           
+            <Dialog visible={deleteCamerasDialog} style={{ width: '32rem' }} breakpoints={{ '960px': '75vw', '641px': '90vw' }} header="Confirmar" modal footer={deleteCamerasDialogFooter} onHide={hidedeleteCamerasDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {camera && <span>Are you sure you want to delete the selected cameras?</span>}
+                    {camera && <span>Estas seguro de que quieres borrar las camaras seleccionadas?</span>}
                 </div>
             </Dialog>
         </div>

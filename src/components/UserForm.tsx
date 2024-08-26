@@ -25,7 +25,7 @@ export function UserForm({
             htmlFor="email"
             className="block text-xs text-gray-600 uppercase"
           >
-            Email Address
+            Email
           </label>
           <InputText 
             value={value} onChange={(e) => setValue(e.target.value)}
@@ -44,7 +44,7 @@ export function UserForm({
             htmlFor="password"
             className="block text-xs text-gray-600 uppercase"
           >
-            Password
+            Contraseña 
           </label>
           <InputText 
             value={value2} onChange={(e2) => setValue2(e2.target.value)}
