@@ -86,6 +86,7 @@ function Dashboard() {
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
                 <div className='flex flex-row w-full h-3/4 gap-4'>
+                    {/* 
                     <div className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'>
                         <Doughnut
                             data={currentChartData(
@@ -104,14 +105,68 @@ function Dashboard() {
                             }}
                         />
                     </div>
-                    <Floorplan
-                        className='flex-1 border-sky-700 border-2 rounded-lg'
-                        data={
-                            occupancyData.selectedBatch
-                                ? occupancyData.selectedBatch.data
-                                : occupancyData.getAllCurrentOccupancyData().data
-                        }
-                    />
+*/}
+
+                    <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
+                        <Floorplan
+                            className='flex-1'
+                            sceneFile='/scene.gltf'
+                            data={
+                                occupancyData.selectedBatch
+                                    ? occupancyData.selectedBatch.data
+                                    : occupancyData.getAllCurrentOccupancyData().data
+                            }
+                        />
+                        {/* text overlay on top right */}
+                        <div className='absolute w-1/4 top-0 right-0 text-white  rounded-lg'>
+                            <Doughnut
+                                data={currentChartData(
+                                    occupancyData.selectedBatch
+                                        ? occupancyData.selectedBatch.data
+                                        : occupancyData.getAllCurrentOccupancyData().data,
+                                )}
+                                options={{
+                                    plugins: {
+                                        title: {
+                                            display: false,
+                                            text: 'Ocupación actual',
+                                            color: '#fff',
+                                        },
+                                    },
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
+                        <Floorplan
+                            className='flex-1'
+                            sceneFile='/scene2.gltf'
+                            data={
+                                occupancyData.selectedBatch
+                                    ? occupancyData.selectedBatch.data
+                                    : occupancyData.getAllCurrentOccupancyData().data
+                            }
+                        />
+                        {/* text overlay on top right */}
+                        <div className='absolute top-0 right-0 w-1/4 text-white rounded-lg'>
+                            <Doughnut
+                                data={currentChartData(
+                                    occupancyData.selectedBatch
+                                        ? occupancyData.selectedBatch.data
+                                        : occupancyData.getAllCurrentOccupancyData().data,
+                                )}
+                                options={{
+                                    plugins: {
+                                        title: {
+                                            display: false,
+                                            text: 'Ocupación actual',
+                                            color: '#fff',
+                                        },
+                                    },
+                                }}
+                            />
+                        </div>
+                    </div>
                 </div>
                 {/* historical line chart for all cameras (total count) */}
                 <div className='h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'>

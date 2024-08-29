@@ -8,13 +8,15 @@ import * as THREE from 'three';
 export function MeshComponent({
     hovered,
     data,
+    sceneFile,
     ...props
 }: {
     hovered: boolean;
     data: OccupancyData[];
     props?: object;
+    sceneFile: string;
 }) {
-    const { scene } = useGLTF('/scene.gltf');
+    const { scene } = useGLTF(sceneFile);
 
     // rotate
     useFrame((state, delta) => {
@@ -147,12 +149,22 @@ export function MeshComponent({
     return <primitive object={scene} {...props} />;
 }
 
-function Floorplan({ data, className, ...props }: { data: OccupancyData[]; className?: string; props?: object }) {
+function Floorplan({
+    data,
+    sceneFile,
+    className,
+    ...props
+}: {
+    data: OccupancyData[];
+    sceneFile: string;
+    className?: string;
+    props?: object;
+}) {
     const [hovered, setHovered] = useState(false);
     return (
         <Canvas className={className} onMouseEnter={() => setHovered(true)} onMouseOut={() => setHovered(false)}>
             <OrbitControls />
-            <MeshComponent hovered={hovered} data={data} />
+            <MeshComponent hovered={hovered} data={data} sceneFile={sceneFile} />
         </Canvas>
     );
 }
