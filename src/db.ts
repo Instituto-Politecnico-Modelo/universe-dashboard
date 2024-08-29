@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URL) {
-    console.log('MONGO_URL is not defined');
+    console.log('MONGODB_URL is not defined');
     process.env.MONGODB_URL = 'mongodb://localhost:27017/galaxy';
 }
 
