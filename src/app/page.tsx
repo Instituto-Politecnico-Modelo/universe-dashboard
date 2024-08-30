@@ -239,7 +239,7 @@ function historicalChartData(batch: OccupancyBatch[]) {
                 backgroundColor: ['#7dd3fc'],
                 borderColor: '#0369a1',
                 tension: 0.4,
-                fill: true,
+                fill: false,
             },
         ],
         labels: batch.toReversed().map((d) => d.timestamp.toTimeString().slice(0, 5)),

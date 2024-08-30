@@ -101,25 +101,36 @@ export function MeshComponent({
             const scaledOcupancy = occupancy / threshold;
             const minScale = 0.1;
             const maxScale = 0.483;
-            const newScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
+            const newXScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
+            const newYScale = Math.pow(0.15, -Math.abs((1 - distanceToCenter / maxDistance) * scaledOcupancy));
+
             // set scale
             //            cubeMesh.scale.set(newScale, newScale, newScale);
 
             // animate the change in scale from the old to the new
             cube.onBeforeRender = (renderer, scene, camera, geometry, material, group) => {
-                const deltaScale = newScale - cubeMesh.scale.x;
+                const deltaScale = newYScale - cubeMesh.scale.y;
+                const deltaXScale = newXScale - cubeMesh.scale.x;
                 const scaleSpeed = 0.05;
                 if (Math.abs(deltaScale) > 0.001) {
-                    const newScale = cubeMesh.scale.x + deltaScale * scaleSpeed;
-                    cubeMesh.scale.set(newScale, newScale, newScale);
-                } else {
+                    const newScale = cubeMesh.scale.y + deltaScale * scaleSpeed;
+                    cubeMesh.scale.set(cubeMesh.scale.x, newScale, cubeMesh.scale.z);
+                }
+                if (Math.abs(deltaXScale) > 0.001) {
+                    const newScale = cubeMesh.scale.x + deltaXScale * scaleSpeed;
+                    cubeMesh.scale.set(newScale, cubeMesh.scale.y, newScale);
+                    //  set y position based on scale
+                    cubeMesh.position.y = cubeMesh.scale.y;
+                }
+
+                if (Math.abs(deltaXScale) < 0.001 && Math.abs(deltaScale) < 0.001) {
                     // delete callback
                     cube.onBeforeRender = () => {};
                 }
             };
 
             // change color based on occupancy and scale
-            const hexColor = calculateGradientFromValue(newScale, 0, 0.483, [0x00ff00, 0xccff00, 0xff0000]);
+            const hexColor = calculateGradientFromValue(newXScale, 0, 0.483, [0x00ff00, 0xccff00, 0xff0000]);
 
             const color = new THREE.Color(hexColor);
 
