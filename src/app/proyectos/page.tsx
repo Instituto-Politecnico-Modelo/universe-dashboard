@@ -1,6 +1,9 @@
 'use client';
 import ProyectoCard from '@/components/ProyectoCard';
 import { DataView } from 'primereact/dataview';
+import { useState } from 'react';
+import paginas from '@/components/paginas';
+import BasicDemo from '@/components/paginas';
 
 export default function Page() {
     const proyecto = {
@@ -17,9 +20,11 @@ export default function Page() {
 
         let list = proyectos.map((proyecto, index) => {
             return <ProyectoCard key={index} proyecto={proyecto} />;
-        });
-        return <div className='flex p-2 gap-2 flex-wrap'>{list}</div>;
-    };
+        }); 
+       // return <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>{list}</div>;
+       return <div className='flex flex-wrap pt-2 justify-center gap-4'>{list}</div>;
+       
+    };      
 
     return (
         <DataView
@@ -35,11 +40,12 @@ export default function Page() {
                 proyecto,
                 proyecto,
                 proyecto,
+                proyecto,
+                proyecto,
             ]}
-            className='scrollable-container'
-            listTemplate={listTemplate as any}
-            paginator
-            rows={5}
-        />
+        className='scrollable-container'
+        listTemplate={listTemplate as any}
+        paginator
+        rows={6}/>
     );
 }
