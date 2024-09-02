@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 
 export function MeshComponent({
-    hovered,
+    rotate,
     data,
     sceneFile,
+    location,
     ...props
 }: {
-    hovered: boolean;
+    rotate: boolean;
+    location?: string;
     data: OccupancyData[];
     props?: object;
     sceneFile: string;
@@ -20,7 +22,7 @@ export function MeshComponent({
 
     // rotate
     useFrame((state, delta) => {
-        if (!hovered) scene.rotation.y += Math.sin(delta) * (Math.PI / 8);
+        if (rotate) scene.rotation.y += Math.sin(delta) * (Math.PI / 8);
     });
 
     const setAreaColorByOccupancy = (areaName: string, occupancy: number) => {
@@ -99,10 +101,13 @@ export function MeshComponent({
             // get the most distant point of the frame to the center as a reference
             // the closer to the center, the bigger the scale
             const scaledOcupancy = occupancy / threshold;
-            const minScale = 0.1;
+            const minScale = 0.0;
             const maxScale = 0.483;
-            const newXScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
-            const newYScale = Math.pow(0.15, -Math.abs((1 - distanceToCenter / maxDistance) * scaledOcupancy));
+            const XScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
+            const newXScale = XScale < 0.001 ? 0 : XScale;
+
+            const YScale = Math.pow(0.15, -Math.abs((1 - distanceToCenter / maxDistance) * scaledOcupancy));
+            const newYScale = YScale - 1;
 
             // set scale
             //            cubeMesh.scale.set(newScale, newScale, newScale);
@@ -145,15 +150,62 @@ export function MeshComponent({
             setCubesByOccupancy(location, personas, threshold);
         });
     }, [...data.values()]);
+    const [currentLocation, setCurrentLocation] = useState('');
+
+    useFrame(({ gl, scene, camera }, delta) => {
+        if (location) {
+            // get the camera object
+            const newCamera = scene.getObjectByName(location + '_camera') as THREE.PerspectiveCamera;
+
+            // check if the camera exists and it is not already on the location
+            if (newCamera && currentLocation !== location) {
+                // lerp the camera position and rotation to the new camera
+                const initialPos = camera.position.clone();
+                const initialRot = camera.quaternion.clone();
+                const finalPos = newCamera.position.clone();
+                const finalRot = newCamera.quaternion.clone();
+
+                camera.position.lerpVectors(initialPos, finalPos, delta);
+                // camera.quaternion.slerpQuaternions(initialRot, finalRot, delta);
+                // check if we are close enough to the final position
+                if (camera.position.distanceTo(finalPos) < 0.1 && camera.quaternion.angleTo(finalRot) < 1) {
+                    // set the current location to the new location
+                    setCurrentLocation(location);
+                }
+            }
+        }
+        gl.render(scene, camera);
+    }, 1);
 
     // set camerera location and rotation using FloorplanCamera object
     useThree(({ camera }) => {
-        const cameraObject = scene.getObjectByName('FloorplanCamera') as THREE.PerspectiveCamera;
-        // set it only if it exists and it is on the initial position
-        // HACK: i have no idea why this is the initial position
-        if (cameraObject && camera.position.equals(new THREE.Vector3(0, 3.061616997868383e-16, 5))) {
-            camera.position.copy(cameraObject.position);
-            camera.rotation.copy(cameraObject.rotation);
+        /*
+        if (cycleCameras) {
+            // every 30 seconds, cycle through the cameras for each location
+            const time = Date.now() / 1000;
+            const index = Math.floor(time / 30) % cameras.length;
+            const newCamera = cameras[index];
+            const initialPos = camera.position.clone();
+            const initialRot = camera.quaternion.clone();
+            const finalPos = newCamera.position.clone();
+            const finalRot = newCamera.quaternion.clone();
+            camera.onBeforeRender = (renderer, scene, camera, geometry, material, group) => {
+                const delta = (Date.now() / 1000 - time) % 30;
+                const t = delta / 30;
+                camera.position.lerpVectors(initialPos, finalPos, t);
+                camera.quaternion.slerpQuaternions(initialRot, finalRot, t);
+
+                if (delta > 30) camera.onBeforeRender = () => {};
+            };
+        }*/ if (!location) {
+            const cameraObject = scene.getObjectByName('FloorplanCamera') as THREE.PerspectiveCamera;
+
+            // set it only if it exists and it is on the initial position
+            // HACK: i have no idea why this is the initial position
+            if (cameraObject && camera.position.equals(new THREE.Vector3(0, 3.061616997868383e-16, 5))) {
+                camera.position.copy(cameraObject.position);
+                camera.rotation.copy(cameraObject.rotation);
+            }
         }
     });
 
@@ -164,18 +216,30 @@ function Floorplan({
     data,
     sceneFile,
     className,
+    location,
     ...props
 }: {
     data: OccupancyData[];
     sceneFile: string;
     className?: string;
+    location?: string;
     props?: object;
 }) {
-    const [hovered, setHovered] = useState(false);
+    const [rotate, setRotate] = useState(false);
+    useEffect(() => {
+        if (!location) {
+            setRotate(true);
+        }
+    }, []);
     return (
-        <Canvas className={className} onMouseEnter={() => setHovered(true)} onMouseOut={() => setHovered(false)}>
+        <Canvas
+            className={className}
+            // HACK: i should find a better solution for this
+            onMouseEnter={() => !location && setRotate(false)}
+            onMouseOut={() => !location && setRotate(true)}
+        >
             <OrbitControls />
-            <MeshComponent hovered={hovered} data={data} sceneFile={sceneFile} />
+            <MeshComponent rotate={rotate} data={data} sceneFile={sceneFile} location={location} />
         </Canvas>
     );
 }

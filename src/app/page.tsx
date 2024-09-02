@@ -7,17 +7,22 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
 import { Skeleton } from 'primereact/skeleton';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 
 function Dashboard() {
     ChartJS.defaults.color = 'white';
+
+    const [cameraLocation, setCameraLocation] = useState('patio');
     const occupancyData = useOccupancyData();
     const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
-        queryFn: async () => await getLatestForAllCameras(),
+        queryFn: async () => {
+            setCameraLocation(cameraLocation === 'patio' ? 'laboratorio_1' : 'patio');
+            return await getLatestForAllCameras();
+        },
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
     });
@@ -86,31 +91,11 @@ function Dashboard() {
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
                 <div className='flex flex-row w-full h-3/4 gap-4'>
-                    {/* 
-                    <div className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'>
-                        <Doughnut
-                            data={currentChartData(
-                                occupancyData.selectedBatch
-                                    ? occupancyData.selectedBatch.data
-                                    : occupancyData.getAllCurrentOccupancyData().data,
-                            )}
-                            options={{
-                                plugins: {
-                                    title: {
-                                        display: true,
-                                        text: 'Ocupación actual',
-                                        color: '#fff',
-                                    },
-                                },
-                            }}
-                        />
-                    </div>
-*/}
-
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
                         <Floorplan
                             className='flex-1'
                             sceneFile='/scene.gltf'
+                            location={cameraLocation}
                             data={
                                 occupancyData.selectedBatch
                                     ? occupancyData.selectedBatch.data
