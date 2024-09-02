@@ -1,6 +1,7 @@
 'use client';
 import { getBatchesSince, getLatestForAllCameras } from '@/actions/occupancyDataActions';
 import Floorplan from '@/components/Floorplan';
+import GradientBackground from '@/components/GradientBackground';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
@@ -75,18 +76,19 @@ function Dashboard() {
 
     return (
         <>
-            <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
-                <span
-                    className={`text-nowrap text-[3vw] pr-2 ${kanit.className}`}
-                    style={{ WebkitTextFillColor: 'transparent', WebkitTextStroke: '1.5px orange' }}
-                >
-                    Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo
-                    Politécnico Modelo Politécnico Modelo
-                </span>
-            </InteractiveMarquee>
-            <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
-                <div className='flex flex-row w-full h-3/4 gap-4'>
-                    {/* 
+            <GradientBackground>
+                <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
+                    <span
+                        className={`text-nowrap text-[3vw] pr-2 ${kanit.className}`}
+                        style={{ WebkitTextFillColor: 'transparent', WebkitTextStroke: '1.5px orange' }}
+                    >
+                        Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo Politécnico Modelo
+                        Politécnico Modelo Politécnico Modelo
+                    </span>
+                </InteractiveMarquee>
+                <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
+                    <div className='flex flex-row w-full h-3/4 gap-4'>
+                        {/* 
                     <div className=' flex flex-col p-5 h-full border-2 rounded-lg border-sky-700'>
                         <Doughnut
                             data={currentChartData(
@@ -107,94 +109,95 @@ function Dashboard() {
                     </div>
 */}
 
-                    <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
-                        <Floorplan
-                            className='flex-1'
-                            sceneFile='/scene.gltf'
-                            data={
-                                occupancyData.selectedBatch
-                                    ? occupancyData.selectedBatch.data
-                                    : occupancyData.getAllCurrentOccupancyData().data
-                            }
-                        />
-                        {/* text overlay on top right */}
-                        <div className='absolute w-1/4 top-0 right-0 text-white  rounded-lg'>
-                            <Doughnut
-                                data={currentChartData(
+                        <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
+                            <Floorplan
+                                className='flex-1'
+                                sceneFile='/scene.gltf'
+                                data={
                                     occupancyData.selectedBatch
                                         ? occupancyData.selectedBatch.data
-                                        : occupancyData.getAllCurrentOccupancyData().data,
-                                )}
-                                options={{
-                                    plugins: {
-                                        title: {
-                                            display: false,
-                                            text: 'Ocupación actual',
-                                            color: '#fff',
+                                        : occupancyData.getAllCurrentOccupancyData().data
+                                }
+                            />
+                            {/* text overlay on top right */}
+                            <div className='absolute w-1/4 top-0 right-0 text-white  rounded-lg'>
+                                <Doughnut
+                                    data={currentChartData(
+                                        occupancyData.selectedBatch
+                                            ? occupancyData.selectedBatch.data
+                                            : occupancyData.getAllCurrentOccupancyData().data,
+                                    )}
+                                    options={{
+                                        plugins: {
+                                            title: {
+                                                display: false,
+                                                text: 'Ocupación actual',
+                                                color: '#fff',
+                                            },
                                         },
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
+                            <Floorplan
+                                className='flex-1'
+                                sceneFile='/scene2.gltf'
+                                data={
+                                    occupancyData.selectedBatch
+                                        ? occupancyData.selectedBatch.data
+                                        : occupancyData.getAllCurrentOccupancyData().data
+                                }
+                            />
+                            {/* text overlay on top right */}
+                            <div className='absolute top-0 right-0 w-1/4 text-white rounded-lg'>
+                                <Doughnut
+                                    data={currentChartData(
+                                        occupancyData.selectedBatch
+                                            ? occupancyData.selectedBatch.data
+                                            : occupancyData.getAllCurrentOccupancyData().data,
+                                    )}
+                                    options={{
+                                        plugins: {
+                                            title: {
+                                                display: false,
+                                                text: 'Ocupación actual',
+                                                color: '#fff',
+                                            },
+                                        },
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    {/* historical line chart for all cameras (total count) */}
+                    <div className='h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'>
+                        {historicalDataQuery.isLoading ? ( // show primereact skeleton
+                            <Skeleton width='100%' height='100%' />
+                        ) : (
+                            <Line
+                                className=''
+                                onClick={historicalChartClick}
+                                ref={historicalChartRef}
+                                data={historicalChartData(occupancyData.occupancyData)}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    elements: {
+                                        point: {
+                                            radius: 0,
+                                        },
+                                    },
+                                    interaction: {
+                                        intersect: false,
+                                        mode: 'x',
                                     },
                                 }}
                             />
-                        </div>
+                        )}
                     </div>
-                    <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
-                        <Floorplan
-                            className='flex-1'
-                            sceneFile='/scene2.gltf'
-                            data={
-                                occupancyData.selectedBatch
-                                    ? occupancyData.selectedBatch.data
-                                    : occupancyData.getAllCurrentOccupancyData().data
-                            }
-                        />
-                        {/* text overlay on top right */}
-                        <div className='absolute top-0 right-0 w-1/4 text-white rounded-lg'>
-                            <Doughnut
-                                data={currentChartData(
-                                    occupancyData.selectedBatch
-                                        ? occupancyData.selectedBatch.data
-                                        : occupancyData.getAllCurrentOccupancyData().data,
-                                )}
-                                options={{
-                                    plugins: {
-                                        title: {
-                                            display: false,
-                                            text: 'Ocupación actual',
-                                            color: '#fff',
-                                        },
-                                    },
-                                }}
-                            />
-                        </div>
-                    </div>
-                </div>
-                {/* historical line chart for all cameras (total count) */}
-                <div className='h-1/4 border-sky-700 w-full border-2 rounded-lg p-4'>
-                    {historicalDataQuery.isLoading ? ( // show primereact skeleton
-                        <Skeleton width='100%' height='100%' />
-                    ) : (
-                        <Line
-                            className=''
-                            onClick={historicalChartClick}
-                            ref={historicalChartRef}
-                            data={historicalChartData(occupancyData.occupancyData)}
-                            options={{
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                elements: {
-                                    point: {
-                                        radius: 0,
-                                    },
-                                },
-                                interaction: {
-                                    intersect: false,
-                                    mode: 'x',
-                                },
-                            }}
-                        />
-                    )}
-                </div>
-            </main>
+                </main>
+            </GradientBackground>
         </>
     );
 }

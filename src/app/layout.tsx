@@ -18,16 +18,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang='en'>
-            <body className='gradient-bg'>
+            <body className='bg-slate-800'>
                 <PrimeReactProvider value={{ ripple: true }}>{children}</PrimeReactProvider>
                 {/* FIXME: hover issues */}
-                <div className='gradients-container'>
-                    <div className='g1'></div>
-                    <div className='g2'></div>
-                    <div className='g3'></div>
-                    <div className='g4'></div>
-                    <div className='g5'></div>
-                </div>
             </body>
         </html>
     );
