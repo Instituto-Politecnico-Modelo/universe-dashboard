@@ -6,6 +6,7 @@ import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataCo
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
+import { Button } from 'primereact/button';
 import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useRef, useState } from 'react';
 import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
@@ -20,7 +21,6 @@ function Dashboard() {
     const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
         queryFn: async () => {
-            setCameraLocation(cameraLocation === 'patio' ? 'laboratorio_1' : 'patio');
             return await getLatestForAllCameras();
         },
         refetchOnWindowFocus: true,
@@ -90,7 +90,13 @@ function Dashboard() {
                 </span>
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
-                <div className='flex flex-row w-full h-3/4 gap-4'>
+                <Button className='fixed top-3 w-48 left-3' label='Patio' onClick={() => setCameraLocation('patio')} />
+                <Button
+                    className='fixed top-3 w-48 right-3 z-10'
+                    label='Labo'
+                    onClick={() => setCameraLocation('laboratorio_1')}
+                />
+                <div className='flex flex-row w-full h-3/4 gap-4 z-10'>
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
                         <Floorplan
                             className='flex-1'

@@ -151,6 +151,8 @@ export function MeshComponent({
         });
     }, [...data.values()]);
     const [currentLocation, setCurrentLocation] = useState('');
+    const [currentLerp, setCurrentLerp] = useState(0);
+    const [currentSlerp, setCurrentSlerp] = useState(0);
 
     useFrame(({ gl, scene, camera }, delta) => {
         if (location) {
@@ -165,13 +167,17 @@ export function MeshComponent({
                 const finalPos = newCamera.position.clone();
                 const finalRot = newCamera.quaternion.clone();
 
-                camera.position.lerpVectors(initialPos, finalPos, delta);
-                // camera.quaternion.slerpQuaternions(initialRot, finalRot, delta);
+                setCurrentLerp(Math.min(currentLerp + delta * 0.001, 1));
+                setCurrentSlerp(Math.min(currentSlerp + delta * 0.1, 1));
+                camera.position.lerpVectors(initialPos, finalPos, currentLerp);
+                camera.quaternion.slerpQuaternions(initialRot, finalRot, currentSlerp);
                 // check if we are close enough to the final position
+                /*
                 if (camera.position.distanceTo(finalPos) < 0.1 && camera.quaternion.angleTo(finalRot) < 1) {
                     // set the current location to the new location
                     setCurrentLocation(location);
                 }
+                    */
             }
         }
         gl.render(scene, camera);
