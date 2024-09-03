@@ -130,6 +130,7 @@ function Dashboard() {
                     </div>
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
                         <Floorplan
+                            controls
                             className='flex-1'
                             sceneFile='/scene2.gltf'
                             data={

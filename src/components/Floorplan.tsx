@@ -2,6 +2,7 @@
 import { calculateGradientFromValue } from '@/services/utils';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import TWEEN from '@tweenjs/tween.js';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';
 
@@ -155,55 +156,31 @@ export function MeshComponent({
     const [currentSlerp, setCurrentSlerp] = useState(0);
 
     useFrame(({ gl, scene, camera }, delta) => {
+        TWEEN.update();
         if (location) {
             // get the camera object
             const newCamera = scene.getObjectByName(location + '_camera') as THREE.PerspectiveCamera;
 
             // check if the camera exists and it is not already on the location
             if (newCamera && currentLocation !== location) {
-                // lerp the camera position and rotation to the new camera
-                const initialPos = camera.position.clone();
-                const initialRot = camera.quaternion.clone();
-                const finalPos = newCamera.position.clone();
-                const finalRot = newCamera.quaternion.clone();
+                new TWEEN.Tween(camera.position)
+                    .to({ x: newCamera.position.x, y: newCamera.position.y, z: newCamera.position.z })
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .start();
 
-                setCurrentLerp(Math.min(currentLerp + delta * 0.001, 1));
-                setCurrentSlerp(Math.min(currentSlerp + delta * 0.1, 1));
-                camera.position.lerpVectors(initialPos, finalPos, currentLerp);
-                camera.quaternion.slerpQuaternions(initialRot, finalRot, currentSlerp);
-                // check if we are close enough to the final position
-                /*
-                if (camera.position.distanceTo(finalPos) < 0.1 && camera.quaternion.angleTo(finalRot) < 1) {
-                    // set the current location to the new location
-                    setCurrentLocation(location);
-                }
-                    */
+                new TWEEN.Tween(camera.rotation)
+                    .to({ x: newCamera.rotation.x, y: newCamera.rotation.y, z: newCamera.rotation.z })
+                    .easing(TWEEN.Easing.Quadratic.InOut)
+                    .start();
+
+                setCurrentLocation(location);
             }
         }
         gl.render(scene, camera);
     }, 1);
 
-    // set camerera location and rotation using FloorplanCamera object
     useThree(({ camera }) => {
-        /*
-        if (cycleCameras) {
-            // every 30 seconds, cycle through the cameras for each location
-            const time = Date.now() / 1000;
-            const index = Math.floor(time / 30) % cameras.length;
-            const newCamera = cameras[index];
-            const initialPos = camera.position.clone();
-            const initialRot = camera.quaternion.clone();
-            const finalPos = newCamera.position.clone();
-            const finalRot = newCamera.quaternion.clone();
-            camera.onBeforeRender = (renderer, scene, camera, geometry, material, group) => {
-                const delta = (Date.now() / 1000 - time) % 30;
-                const t = delta / 30;
-                camera.position.lerpVectors(initialPos, finalPos, t);
-                camera.quaternion.slerpQuaternions(initialRot, finalRot, t);
-
-                if (delta > 30) camera.onBeforeRender = () => {};
-            };
-        }*/ if (!location) {
+        if (!location) {
             const cameraObject = scene.getObjectByName('FloorplanCamera') as THREE.PerspectiveCamera;
 
             // set it only if it exists and it is on the initial position
@@ -223,6 +200,7 @@ function Floorplan({
     sceneFile,
     className,
     location,
+    controls,
     ...props
 }: {
     data: OccupancyData[];
@@ -230,6 +208,7 @@ function Floorplan({
     className?: string;
     location?: string;
     props?: object;
+    controls?: boolean;
 }) {
     const [rotate, setRotate] = useState(false);
     useEffect(() => {
@@ -244,7 +223,8 @@ function Floorplan({
             onMouseEnter={() => !location && setRotate(false)}
             onMouseOut={() => !location && setRotate(true)}
         >
-            <OrbitControls />
+            {controls && <OrbitControls />}
+
             <MeshComponent rotate={rotate} data={data} sceneFile={sceneFile} location={location} />
         </Canvas>
     );
