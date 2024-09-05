@@ -4,6 +4,7 @@ import { DataView } from 'primereact/dataview';
 import { useState } from 'react';
 import paginas from '@/components/paginas';
 import BasicDemo from '@/components/paginas';
+import { div } from 'three/examples/jsm/nodes/Nodes.js';
 
 export default function Page() {
     const proyecto = {
