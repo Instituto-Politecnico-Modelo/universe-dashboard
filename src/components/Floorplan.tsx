@@ -2,6 +2,7 @@
 import { calculateGradientFromValue } from '@/services/utils';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+/* @ts-ignore */
 import TWEEN from '@tweenjs/tween.js';
 import { useEffect, useState } from 'react';
 import * as THREE from 'three';

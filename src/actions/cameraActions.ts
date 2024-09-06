@@ -1,7 +1,6 @@
 'use server';
-import client from "@/db";
-import { Camera } from "@/types/camera";
-import { ObjectId } from "mongodb";
+import client from '@/db';
+import { ObjectId } from 'mongodb';
 
 let emptyCamera: Camera = {
     _id: '',
@@ -11,19 +10,18 @@ let emptyCamera: Camera = {
     threshold: 0,
 };
 
-
-export async function getAllCameras(){
+export async function getAllCameras() {
     let isConnected = false;
     try {
         await client.connect();
         isConnected = true;
         const cameras = client.db('galaxy').collection('cameras');
         let result = await cameras.find().toArray();
-        let aux : Camera[] = [];
-        for(let i = 0; i < result.length; i++){
+        let aux: Camera[] = [];
+        for (let i = 0; i < result.length; i++) {
             aux.push({ ...emptyCamera });
         }
-        for(let i = 0; i < result.length; i++){
+        for (let i = 0; i < result.length; i++) {
             aux[i]._id = String(result[i]._id);
             aux[i].name = result[i].name;
             aux[i].url = result[i].url;
@@ -39,24 +37,23 @@ export async function getAllCameras(){
         }
     }
 }
-export async function getCameraById(id: string){
+export async function getCameraById(id: string) {
     let isConnected = false;
     try {
         await client.connect();
         isConnected = true;
         const cameras = client.db('galaxy').collection('cameras');
-        let aux : ObjectId = new ObjectId(id);
-        let result = await cameras.findOne({_id: aux});
-        if(result != null){
-            return{
+        let aux: ObjectId = new ObjectId(id);
+        let result = await cameras.findOne({ _id: aux });
+        if (result != null) {
+            return {
                 _id: String(result._id),
                 name: result.name,
                 url: result.url,
                 location: result.location,
-                threshold : result.threshold
-            }
-        }
-        else{
+                threshold: result.threshold,
+            };
+        } else {
             return null;
         }
     } catch (error) {
@@ -67,23 +64,23 @@ export async function getCameraById(id: string){
         }
     }
 }
-export async function createCameraAction(camera: Camera){
+export async function createCameraAction(camera: Camera) {
     let isConnected = false;
     try {
         await client.connect();
         isConnected = true;
         const cameras = client.db('galaxy').collection('cameras');
         let result = await cameras.insertOne({
-            _id : new ObjectId(),
+            _id: new ObjectId(),
             name: camera.name,
             url: camera.url,
             location: camera.location,
-            threshold: camera.threshold
+            threshold: camera.threshold,
         });
         console.log(result);
-        return  {
+        return {
             _id: String(result.insertedId),
-        }
+        };
     } catch (error) {
         console.error('Error connecting to the database', error);
     } finally {
@@ -92,20 +89,23 @@ export async function createCameraAction(camera: Camera){
         }
     }
 }
-export async function updateCameraAction(camera: Camera){
+export async function updateCameraAction(camera: Camera) {
     let isConnected = false;
     try {
         await client.connect();
         isConnected = true;
         const cameras = client.db('galaxy').collection('cameras');
-        return await cameras.updateOne({_id: new ObjectId(camera._id)}, {
-            $set: {
-                name: camera.name,
-                url: camera.url,
-                location: camera.location,
-                threshold: camera.threshold
-            }
-        });
+        return await cameras.updateOne(
+            { _id: new ObjectId(camera._id) },
+            {
+                $set: {
+                    name: camera.name,
+                    url: camera.url,
+                    location: camera.location,
+                    threshold: camera.threshold,
+                },
+            },
+        );
     } catch (error) {
         console.error('Error connecting to the database', error);
     } finally {
@@ -115,15 +115,15 @@ export async function updateCameraAction(camera: Camera){
     }
 }
 
-export async function deleteCameraAction(id: string){
+export async function deleteCameraAction(id: string) {
     let isConnected = false;
-    console.log("Delete:" + id);
+    console.log('Delete:' + id);
     try {
         await client.connect();
         isConnected = true;
         const cameras = client.db('galaxy').collection('cameras');
         let aux = new ObjectId(id);
-        return await cameras.deleteOne({_id: aux});
+        return await cameras.deleteOne({ _id: aux });
     } catch (error) {
         console.error('Error connecting to the database', error);
     } finally {
@@ -131,4 +131,11 @@ export async function deleteCameraAction(id: string){
             await client.close();
         }
     }
+}
+
+export async function getAllLocations(): Promise<string[]> {
+    return client.connect().then(async () => {
+        const cameras = client.db('galaxy').collection('cameras');
+        return await cameras.distinct('location');
+    });
 }

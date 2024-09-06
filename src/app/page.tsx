@@ -1,4 +1,5 @@
 'use client';
+import { getAllLocations } from '@/actions/cameraActions';
 import { getBatchesSince, getLatestForAllCameras } from '@/actions/occupancyDataActions';
 import Floorplan from '@/components/Floorplan';
 import { InteractiveMarquee } from '@/components/Marquee';
@@ -6,7 +7,6 @@ import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataCo
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import ChartJS from 'chart.js/auto';
 import { Kanit } from 'next/font/google';
-import { Button } from 'primereact/button';
 import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useRef, useState } from 'react';
 import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
@@ -20,11 +20,15 @@ function Dashboard() {
     const occupancyData = useOccupancyData();
     const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
-        queryFn: async () => {
-            return await getLatestForAllCameras();
-        },
+        queryFn: async () => await getLatestForAllCameras(),
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
+    });
+
+    const locationsQuery = useQuery({
+        queryKey: ['locations'],
+        queryFn: async () => await getAllLocations(),
+        refetchOnReconnect: false,
     });
 
     const historicalDataQuery = useQuery({
@@ -39,6 +43,19 @@ function Dashboard() {
     });
 
     const historicalChartRef = useRef(null);
+
+    // change location every 10 seconds
+    useEffect(() => {
+        if (locationsQuery.data) {
+            const locations = locationsQuery.data;
+            let i = 0;
+            const interval = setInterval(() => {
+                setCameraLocation(locations[i]);
+                i = (i + 1) % locations.length;
+            }, 10000);
+            return () => clearInterval(interval);
+        }
+    }, [locationsQuery.data]);
 
     useEffect(() => {
         if (!data) return;
@@ -90,18 +107,12 @@ function Dashboard() {
                 </span>
             </InteractiveMarquee>
             <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4'>
-                <Button className='fixed top-3 w-48 left-3' label='Patio' onClick={() => setCameraLocation('patio')} />
-                <Button
-                    className='fixed top-3 w-48 right-3 z-10'
-                    label='Labo'
-                    onClick={() => setCameraLocation('laboratorio_1')}
-                />
                 <div className='flex flex-row w-full h-3/4 gap-4 z-10'>
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
                         <Floorplan
+                            controls
                             className='flex-1'
-                            sceneFile='/scene.gltf'
-                            location={cameraLocation}
+                            sceneFile='/scene2.gltf'
                             data={
                                 occupancyData.selectedBatch
                                     ? occupancyData.selectedBatch.data
@@ -109,7 +120,7 @@ function Dashboard() {
                             }
                         />
                         {/* text overlay on top right */}
-                        <div className='absolute w-1/4 top-0 right-0 text-white  rounded-lg'>
+                        <div className='absolute top-0 right-0 w-1/4 text-white rounded-lg'>
                             <Doughnut
                                 data={currentChartData(
                                     occupancyData.selectedBatch
@@ -129,10 +140,14 @@ function Dashboard() {
                         </div>
                     </div>
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
+                        {/* locaiton as title */}
+                        <h2 className='text-center absolute top-0 left-0 z-50 text-2xl text-white bg-none bg-sky-700 rounded-br-md p-2'>
+                            {cameraLocation}
+                        </h2>
                         <Floorplan
-                            controls
                             className='flex-1'
-                            sceneFile='/scene2.gltf'
+                            sceneFile='/scene.gltf'
+                            location={cameraLocation}
                             data={
                                 occupancyData.selectedBatch
                                     ? occupancyData.selectedBatch.data
@@ -140,7 +155,7 @@ function Dashboard() {
                             }
                         />
                         {/* text overlay on top right */}
-                        <div className='absolute top-0 right-0 w-1/4 text-white rounded-lg'>
+                        <div className='absolute w-1/4 top-0 right-0 text-white  rounded-lg'>
                             <Doughnut
                                 data={currentChartData(
                                     occupancyData.selectedBatch
