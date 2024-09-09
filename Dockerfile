@@ -1,40 +1,33 @@
-FROM node:18-alpine AS base
-FROM base as deps
-
-RUN apk add --no-cache libc6-compat
+FROM node:17.1.0-alpine3.12 AS development
 WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm ci --only=production
-
-FROM base as builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-RUN npm run build
-
-FROM base as runner
-WORKDIR /app
-ENV NODE_ENV production
-
-ENV NEXT_TELEMETRY_DISABLED 1
-
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-
-COPY --from=builder /app/public ./public
-
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-EXPOSE 3000
-
+ENV HOST=0.0.0.0
 ENV PORT=3000
+ENV NODE_ENV=development
+EXPOSE 3000
+CMD [ "npm", "run", "dev" ]
 
-CMD HOSTNAME="0.0.0.0" node server.js
+FROM node:18.20-alpine AS dependencies
+ENV NODE_ENV=production
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:18.20-alpine AS builder
+ENV NODE_ENV=development
+WORKDIR /app
+COPY . .
+RUN npm ci && NODE_ENV=production npm run build
+
+FROM node:18.20-alpine AS production
+WORKDIR /app
+ENV HOST=0.0.0.0
+ENV PORT=3000
+ENV NODE_ENV=production
+COPY --chown=node --from=builder /app/next.config.mjs ./
+COPY --chown=node --from=builder /app/public ./public
+COPY --chown=node --from=builder /app/.next ./.next
+COPY --chown=node --from=builder /app/package-lock.json /app/package.json ./
+COPY --chown=node --from=dependencies /app/node_modules ./node_modules
+USER node
+EXPOSE 3000
+CMD [ "npm", "start" ]
