@@ -1,11 +1,6 @@
 'use client';
+import ProyectList from '@/components/ProyectList';
 import ProyectoCard from '@/components/ProyectoCard';
-import { DataView } from 'primereact/dataview';
-import { useState } from 'react';
-import paginas from '@/components/paginas';
-import BasicDemo from '@/components/paginas';
-import { div } from 'three/examples/jsm/nodes/Nodes.js';
-
 export default function Page() {
     const proyecto = {
         _id: '1',
@@ -16,37 +11,19 @@ export default function Page() {
         authors: ['Autor 1', 'Autor 2'],
     };
 
-    const listTemplate = (proyectos: Proyecto[]) => {
+    const listTemplate = async (proyectos: Proyecto[]) => {
         if (!proyectos || proyectos.length === 0) return null;
 
         let list = proyectos.map((proyecto, index) => {
             return <ProyectoCard key={index} proyecto={proyecto} />;
-        }); 
-       // return <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>{list}</div>;
-       return <div className='flex flex-wrap pt-2 justify-center gap-4'>{list}</div>;
-       
-    };      
+        });
+        // return <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>{list}</div>;
+        return <div className='flex flex-wrap pt-2 justify-center gap-4'>{list}</div>;
+    };
 
     return (
-        <DataView
-            value={[
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-                proyecto,
-            ]}
-        className='scrollable-container'
-        listTemplate={listTemplate as any}
-        paginator
-        rows={6}/>
+        <>
+            <ProyectList />
+        </>
     );
 }

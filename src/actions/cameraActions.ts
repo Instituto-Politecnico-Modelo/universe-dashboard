@@ -1,6 +1,5 @@
 'use server';
 import client from "@/db";
-import { Camera } from "@/types/camera";
 import { ObjectId } from "mongodb";
 
 let emptyCamera: Camera = {
