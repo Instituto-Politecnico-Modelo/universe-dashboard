@@ -44,11 +44,19 @@ export const getMaxBatchPersonas = (floor: string): Promise<number> =>
         const batchesCollection = client.db('galaxy').collection<Batch>('batches');
         // this function should find the batch with the most personas and return the number
 
-        const maxBatch = await batchesCollection.findOne({}, { sort: { personas: -1 } });
 
-        if (floor === '1p') return maxBatch?.personas_1p as number;
-        else if (floor === 'pb') return maxBatch?.personas_pb as number;
-        else return maxBatch?.personas as number;
+        if (floor === '1p'){
+            const maxBatch = await batchesCollection.findOne({}, { sort: { personas_1p: -1 } });
+            return maxBatch?.personas_1p as number;
+        }
+        else if (floor === 'pb'){ 
+            const maxBatch = await batchesCollection.findOne({}, { sort: { personas_pb: -1 } });
+            return maxBatch?.personas_pb as number;
+        }
+        else { 
+            const maxBatch = await batchesCollection.findOne({}, { sort: { personas: -1 } });
+            return maxBatch?.personas as number;
+        }
     });
 
 export const getBatchesSince = (startDate: Date): Promise<OccupancyBatch[]> =>
