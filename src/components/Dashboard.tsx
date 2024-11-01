@@ -12,6 +12,7 @@ import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useRef, useState } from 'react';
 import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
 import AnnouncementMarquee from './AnnouncementMarquee';
+import Clock from './Clock';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
 const rajdhani = Rajdhani({ weight: '700', subsets: ['latin'] });
@@ -160,13 +161,15 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                             }
                         />
                         <div className='absolute bottom-0 left-0 text-white rounded-bl-md rounded-tr-md p-2 bg-sky-700 text-2xl bold'>
-                            {
-                                /*total occupancy*/
-                                occupancyData.selectedBatch
-                                    ? occupancyData.selectedBatch.personas_1p
-                                    : occupancyData.getAllCurrentOccupancyData().personas_1p
-                            }{' '}
-                            👤
+                            <div className='flex'>
+                                {
+                                    /*total occupancy*/
+                                    occupancyData.selectedBatch
+                                        ? occupancyData.selectedBatch.personas_1p
+                                        : occupancyData.getAllCurrentOccupancyData().personas_1p
+                                }{' '}
+                                <img src='/person.svg' alt='person' className='h-8 w-8' />
+                            </div>
                         </div>
 
                         {/* top left showing max occupancy for 1p */}
@@ -174,7 +177,10 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                             {maxPersonasQuery.isLoading ? (
                                 <Skeleton width='100%' height='100%' />
                             ) : (
-                                <>MAX: {maxPersonasQuery.data} 👤</>
+                                <div className='flex'>
+                                    MAX: {maxPersonasQuery.data}
+                                    <img src='/person.svg' alt='person' className='h-8 w-8' />
+                                </div>
                             )}
                         </div>
 
@@ -230,13 +236,16 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                         </div>
                         {/* bottom right overlay showing current occupancy for location as text */}
                         <div className='absolute bottom-0 left-0 text-white rounded-bl-md rounded-tr-md p-2 bg-sky-700 text-2xl bold'>
-                            {occupancyData.selectedBatch
-                                ? occupancyData.selectedBatch.data.find((d) => d.location === cameraLocation.location)
-                                      .personas
-                                : occupancyData
-                                      .getAllCurrentOccupancyData()
-                                      .data.find((d) => d.location === cameraLocation.location)?.personas}{' '}
-                            👤
+                            <div className='flex'>
+                                {occupancyData.selectedBatch
+                                    ? occupancyData.selectedBatch.data.find(
+                                          (d) => d.location === cameraLocation.location,
+                                      ).personas
+                                    : occupancyData
+                                          .getAllCurrentOccupancyData()
+                                          .data.find((d) => d.location === cameraLocation.location)?.personas}{' '}
+                                <img src='/person.svg' alt='person' className='h-8 w-8' />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -277,7 +286,7 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
             </main>
             <div className='fixed bottom-0 left-0 animate-border h-9 inline-block w-screen bg-white bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:400%_400%]  text-white text-center z-50'>
                 <div className='flex  justify-end h-full'>
-                    <span className='bg-slate-950 font-bold text-3xl px-2 py-0 m-0 text-white z-50'>{ctime}</span>
+                    <Clock className='bg-slate-950 font-bold text-3xl px-2 py-0 m-0 text-white z-50' />
                     <div className='relative'>
                         <InteractiveMarquee className={`fixed bottom-0 left-0`} speed={0.5}>
                             {announcements.map((announcement, index) => (
@@ -342,7 +351,7 @@ function historicalChartData(batch: OccupancyBatch[]) {
         datasets: [
             {
                 label: 'Ocupación total',
-                data: batch.toReversed().map((d) => d.data.reduce((acc, curr) => acc + curr.personas, 0)),
+                data: batch.toReversed().map((d) => d.personas_1p),
                 backgroundColor: ['#7dd3fc'],
                 borderColor: '#0369a1',
                 tension: 0.4,
