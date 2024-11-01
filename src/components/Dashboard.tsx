@@ -1,23 +1,35 @@
 'use client';
-import { getAllLocations } from '@/actions/cameraActions';
-import { getBatchesSince, getLatestForAllCameras } from '@/actions/occupancyDataActions';
+import { getAnnouncements } from '@/actions/announcementActions';
+import { getAllLocations, getLocations } from '@/actions/cameraActions';
+import { getBatchesSince, getLatestForAllCameras, getMaxBatchPersonas } from '@/actions/occupancyDataActions';
 import Floorplan from '@/components/Floorplan';
 import { InteractiveMarquee } from '@/components/Marquee';
 import { OccupancyDataProvider, useOccupancyData } from '@/hooks/OccupancyDataContext';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import ChartJS from 'chart.js/auto';
-import { Kanit } from 'next/font/google';
+import { Kanit, Rajdhani } from 'next/font/google';
 import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useRef, useState } from 'react';
 import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
+import AnnouncementMarquee from './AnnouncementMarquee';
 
 const kanit = Kanit({ weight: '700', subsets: ['latin'] });
+const rajdhani = Rajdhani({ weight: '700', subsets: ['latin'] });
 
-function Content({ outputUrl }: { outputUrl: string }) {
+function repeatArray<T>(arr: T[], length: number): T[] {
+    // this function repeats the array until it reaches the desired length
+    const ret = [];
+    for (let i = 0; i < length; i++) {
+        ret.push(arr[i % arr.length]);
+    }
+    return ret;
+}
+
+function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
     'use client';
     ChartJS.defaults.color = 'white';
 
-    const [cameraLocation, setCameraLocation] = useState('patio');
+    const [cameraLocation, setCameraLocation] = useState({ location: 'tetas', locationText: 'Cargando...' });
     const occupancyData = useOccupancyData();
     const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
@@ -28,7 +40,7 @@ function Content({ outputUrl }: { outputUrl: string }) {
 
     const locationsQuery = useQuery({
         queryKey: ['locations'],
-        queryFn: async () => await getAllLocations(),
+        queryFn: async () => await getLocations(regex),
         refetchOnReconnect: false,
     });
 
@@ -40,8 +52,33 @@ function Content({ outputUrl }: { outputUrl: string }) {
             const ret = await getBatchesSince(date);
             return ret;
         },
+        refetchInterval: 30000,
         refetchOnReconnect: true,
     });
+
+    const maxPersonasQuery = useQuery({
+        queryKey: ['maxPersonas'],
+        queryFn: async () => await getMaxBatchPersonas('1p'),
+        refetchInterval: 50000,
+        refetchOnReconnect: true,
+    });
+
+    const announcementQuery = useQuery({
+        queryKey: ['announcements'],
+        queryFn: async () => await getAnnouncements('dashboard'),
+        refetchInterval: 30000,
+        refetchOnReconnect: true,
+    });
+    let time = new Date().toLocaleTimeString('es-AR', { hour12: false });
+
+    const [ctime, setTime] = useState(time);
+    /*
+    const UpdateTime = () => {
+        time = new Date().toLocaleTimeString('es-AR', { hour12: false });
+        setTime(time);
+    };
+    setInterval(UpdateTime);
+    */
 
     const historicalChartRef = useRef(null);
 
@@ -72,7 +109,7 @@ function Content({ outputUrl }: { outputUrl: string }) {
     if (isLoading) {
         return (
             <div className='centered text-4xl h-full w-full content-center'>
-                <p className='text-center'>Loading </p>
+                <p className='text-center text-6xl'>Cargando...</p>
             </div>
         );
     }
@@ -96,6 +133,8 @@ function Content({ outputUrl }: { outputUrl: string }) {
         occupancyData.setSelectedBatch(data);
     };
 
+    const announcements = announcementQuery.isLoading ? [] : repeatArray(announcementQuery.data, 7);
+
     return (
         <>
             <InteractiveMarquee className='fixed left-[-218vw] top-[219vw] uppercase' rotate={90} speed={0.02}>
@@ -107,7 +146,7 @@ function Content({ outputUrl }: { outputUrl: string }) {
                     Politécnico Modelo Politécnico Modelo
                 </span>
             </InteractiveMarquee>
-            <main className='flex flex-col w-screen h-screen pl-10 p-4 gap-4 overflow-hidden'>
+            <main className='flex flex-col w-screen h-screen pl-14 p-4 gap-4 overflow-hidden pb-11'>
                 <div className='flex flex-row w-full h-3/4 gap-4 z-10'>
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg'>
                         <Floorplan
@@ -120,7 +159,26 @@ function Content({ outputUrl }: { outputUrl: string }) {
                                     : occupancyData.getAllCurrentOccupancyData().data
                             }
                         />
-                        {/* text overlay on top right */}
+                        <div className='absolute bottom-0 left-0 text-white rounded-bl-md rounded-tr-md p-2 bg-sky-700 text-2xl bold'>
+                            {
+                                /*total occupancy*/
+                                occupancyData.selectedBatch
+                                    ? occupancyData.selectedBatch.personas_1p
+                                    : occupancyData.getAllCurrentOccupancyData().personas_1p
+                            }{' '}
+                            👤
+                        </div>
+
+                        {/* top left showing max occupancy for 1p */}
+                        <div className='absolute top-0 left-0 text-white rounded-tl-md rounded-br-md p-2 bg-red-700 text-2xl bold'>
+                            {maxPersonasQuery.isLoading ? (
+                                <Skeleton width='100%' height='100%' />
+                            ) : (
+                                <>MAX: {maxPersonasQuery.data} 👤</>
+                            )}
+                        </div>
+
+                        {/* text overlay on top right 
                         <div className='absolute top-0 right-0 w-1/4 text-white rounded-lg'>
                             <Doughnut
                                 data={currentChartData(
@@ -139,16 +197,17 @@ function Content({ outputUrl }: { outputUrl: string }) {
                                 }}
                             />
                         </div>
+*/}
                     </div>
                     <div className='flex-1 relative border-sky-700 border-2 rounded-lg overflow-hidden'>
                         {/* locaiton as title */}
                         <h2 className='text-center absolute top-0 left-0 z-50 text-2xl text-white bg-none bg-sky-700 rounded-br-md p-2'>
-                            {cameraLocation}
+                            {cameraLocation.locationText}
                         </h2>
                         <Floorplan
                             className='flex-1'
                             sceneFile='/scene.gltf'
-                            location={cameraLocation}
+                            location={cameraLocation.location}
                             data={
                                 occupancyData.selectedBatch
                                     ? occupancyData.selectedBatch.data
@@ -158,10 +217,26 @@ function Content({ outputUrl }: { outputUrl: string }) {
                         {/* text overlay on top right */}
                         <div className='absolute w-1/2 top-0 right-0 text-white border-2 border-sky-700 rounded-bl-md rounded-tr-md overflow-hidden'>
                             <img
-                                src={outputUrl + '/' + cameraLocation + '_latest.jpg?' + new Date().toISOString()}
+                                src={
+                                    outputUrl +
+                                    '/' +
+                                    cameraLocation.location +
+                                    '_latest.jpg?' +
+                                    new Date().toISOString()
+                                }
                                 alt='output'
                                 className='w-full h-full object-cover'
                             />
+                        </div>
+                        {/* bottom right overlay showing current occupancy for location as text */}
+                        <div className='absolute bottom-0 left-0 text-white rounded-bl-md rounded-tr-md p-2 bg-sky-700 text-2xl bold'>
+                            {occupancyData.selectedBatch
+                                ? occupancyData.selectedBatch.data.find((d) => d.location === cameraLocation.location)
+                                      .personas
+                                : occupancyData
+                                      .getAllCurrentOccupancyData()
+                                      .data.find((d) => d.location === cameraLocation.location)?.personas}{' '}
+                            👤
                         </div>
                     </div>
                 </div>
@@ -187,11 +262,46 @@ function Content({ outputUrl }: { outputUrl: string }) {
                                     intersect: false,
                                     mode: 'x',
                                 },
+                                // integer only
+                                scales: {
+                                    y: {
+                                        ticks: {
+                                            stepSize: 1,
+                                        },
+                                    },
+                                },
                             }}
                         />
                     )}
                 </div>
             </main>
+            <div className='fixed bottom-0 left-0 animate-border h-9 inline-block w-screen bg-white bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:400%_400%]  text-white text-center z-50'>
+                <div className='flex  justify-end h-full'>
+                    <span className='bg-slate-950 font-bold text-3xl px-2 py-0 m-0 text-white z-50'>{ctime}</span>
+                    <div className='relative'>
+                        <InteractiveMarquee className={`fixed bottom-0 left-0`} speed={0.5}>
+                            {announcements.map((announcement, index) => (
+                                <>
+                                    <span
+                                        className={`text-2xl ${rajdhani.className} whitespace-nowrap px-0 `}
+                                        key={index}
+                                    >
+                                        {' '}
+                                        \\\{' '}
+                                    </span>
+                                    <span
+                                        className={`text-2xl ${rajdhani.className} whitespace-nowrap px-3  `}
+                                        key={index}
+                                    >
+                                        <span className='whitespace-nowrap pr-1 uppercase'>{announcement.title}</span>
+                                        {announcement.message}
+                                    </span>
+                                </>
+                            ))}
+                        </InteractiveMarquee>
+                    </div>
+                </div>
+            </div>
         </>
     );
 }
@@ -243,13 +353,13 @@ function historicalChartData(batch: OccupancyBatch[]) {
     };
 }
 
-export default function Dashboard({ outputUrl }: { outputUrl: string }) {
+export default function Dashboard({ outputUrl, prefix }: { outputUrl: string; prefix: string }) {
     'use client';
     const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
             <OccupancyDataProvider>
-                <Content outputUrl={outputUrl} />
+                <Content outputUrl={outputUrl} regex={prefix} />
             </OccupancyDataProvider>
         </QueryClientProvider>
     );

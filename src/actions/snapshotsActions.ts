@@ -7,7 +7,9 @@ export async function getAllSnaps(){
         await client.connect();
         isConnected = true;
         const snaps = client.db('galaxy').collection<Snapshot>('snapshots');
-        return await snaps.find().toArray();
+        const snapArray = await snaps.find().toArray();
+        console.log("snap array:", snapArray)
+        return snapArray;
     } catch (error) {
         console.error('Error connecting to the database', error);
     } finally {

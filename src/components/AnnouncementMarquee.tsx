@@ -1,4 +1,5 @@
 import { InteractiveMarquee } from './Marquee';
+import { motion } from 'framer-motion';
 
 export default function AnnouncementMarquee({
     announcements,
@@ -10,12 +11,32 @@ export default function AnnouncementMarquee({
     // the announcement should be displayed in a marquee
 
     return (
-        <div className='bg-slate-800 rounded-xl '>
-            {announcements.map((announcement, index) => (
-                <InteractiveMarquee className='bg-slate-800 rounded-b-xl' speed={1} key={index}>
-                    <span className={`text-nowrap text-[3vw] pr-2 `}>{announcement.message}</span>
-                </InteractiveMarquee>
-            ))}
+        <div className='fixed z-50 w-full left-0 top-0'>
+            <div className='flex align-middle justify-center'>
+                {announcements.map((announcement, index) => (
+                    <div
+                        key={index}
+                        className='animate-border inline-block rounded-md bg-white bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:400%_400%] p-2 mt-2'
+                        // className='text-white text-center bg-teal-600 rounded-xl whitespace-nowrap flex align-middle p-4 mt-2'
+                    >
+                        {/* title text */}
+                        <div className='text-white text-center font-bold'>{announcement.title}</div>
+                        {announcement.message}{' '}
+                    </div>
+                ))}
+            </div>
+
+            {/*
+            <InteractiveMarquee
+                className='w-full'
+                speed={0.5}
+                threshold={0.01}
+                wheelFactor={1.8}
+                dragFactor={1.2}
+                rotate={0}
+            >
+           </InteractiveMarquee>
+            */}
         </div>
     );
 }

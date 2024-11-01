@@ -51,10 +51,9 @@ export function MeshComponent({
     };
 
     const setCubesByOccupancy = (areaName: string, occupancy: number, threshold: number) => {
-        const area = scene.getObjectByName(areaName + '_dec');
-        const center = scene.getObjectByName(areaName + '_cubo_central') as THREE.Mesh;
-        const frame = scene.getObjectByName(areaName + '_f') as THREE.Mesh;
-        if (!area || !center || !frame) {
+        const center = scene.getObjectByName(areaName + '_cubo_main') as THREE.Mesh;
+        const frame = scene.getObjectByName(areaName + '_paredes') as THREE.Mesh;
+        if (!center || !frame) {
             return;
         }
         const cubeGroup = scene.getObjectByName(areaName + '_cubos') as THREE.Group;
@@ -104,11 +103,11 @@ export function MeshComponent({
             // the closer to the center, the bigger the scale
             const scaledOcupancy = occupancy / threshold;
             const minScale = 0.0;
-            const maxScale = 0.483;
+            const maxScale = 1;
             const XScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
             const newXScale = XScale < 0.001 ? 0 : XScale;
 
-            const YScale = Math.pow(0.15, -Math.abs((1 - distanceToCenter / maxDistance) * scaledOcupancy));
+            const YScale = Math.pow(0.2, -Math.abs((1 - distanceToCenter / maxDistance) * scaledOcupancy));
             const newYScale = YScale - 1;
 
             // set scale
@@ -137,7 +136,7 @@ export function MeshComponent({
             };
 
             // change color based on occupancy and scale
-            const hexColor = calculateGradientFromValue(newXScale, 0, 0.483, [0x00ff00, 0xccff00, 0xff0000]);
+            const hexColor = calculateGradientFromValue(newXScale, 0, maxScale, [0x00ff00, 0xccff00, 0xff0000]);
 
             const color = new THREE.Color(hexColor);
 
@@ -160,7 +159,7 @@ export function MeshComponent({
         TWEEN.update();
         if (location) {
             // get the camera object
-            const newCamera = scene.getObjectByName(location + '_camera') as THREE.PerspectiveCamera;
+            const newCamera = scene.getObjectByName(location + '_camara') as THREE.PerspectiveCamera;
 
             // check if the camera exists and it is not already on the location
             if (newCamera && currentLocation !== location) {

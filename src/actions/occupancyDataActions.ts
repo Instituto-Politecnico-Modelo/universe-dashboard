@@ -21,6 +21,9 @@ export const getLatestForAllCameras = (): Promise<OccupancyBatch> =>
         return {
             _id: batch?._id.toString() as string,
             timestamp: batch?.timestamp as Date,
+            personas: batch?.personas as number,
+            personas_1p: batch?.personas_1p as number,
+            personas_pb: batch?.personas_pb as number,
             data: snaps.map((snap) => {
                 const camera = cameras.find((c) => c._id.toString() === snap.camera_id.toString());
                 return {
@@ -34,6 +37,18 @@ export const getLatestForAllCameras = (): Promise<OccupancyBatch> =>
                 } as OccupancyData;
             }),
         } as OccupancyBatch;
+    });
+
+export const getMaxBatchPersonas = (floor: string): Promise<number> =>
+    client.connect().then(async () => {
+        const batchesCollection = client.db('galaxy').collection<Batch>('batches');
+        // this function should find the batch with the most personas and return the number
+
+        const maxBatch = await batchesCollection.findOne({}, { sort: { personas: -1 } });
+
+        if (floor === '1p') return maxBatch?.personas_1p as number;
+        else if (floor === 'pb') return maxBatch?.personas_pb as number;
+        else return maxBatch?.personas as number;
     });
 
 export const getBatchesSince = (startDate: Date): Promise<OccupancyBatch[]> =>
@@ -52,7 +67,7 @@ export const getBatchesSince = (startDate: Date): Promise<OccupancyBatch[]> =>
             .find({ timestamp: { $gte: startDate }, personas: { $exists: true }, batch_id: { $exists: true } })
             .toArray();
         const cameras = await camerasCollection.find().toArray();
-
+        
         const ret = batches.reduce((acc, curr) => {
             const batchData = snaps.filter((snap) => snap.batch_id.toString() === curr._id.toString());
             if (batchData.length > 0)
@@ -60,6 +75,8 @@ export const getBatchesSince = (startDate: Date): Promise<OccupancyBatch[]> =>
                     _id: curr._id.toString(),
                     timestamp: curr.timestamp,
                     personas: curr.personas,
+                    personas_1p: curr.personas_1p,
+                    personas_pb: curr.personas_pb,
                     data: batchData.map((snap) => {
                         const camera = cameras.find((c) => c._id.toString() === snap.camera_id.toString());
                         return {

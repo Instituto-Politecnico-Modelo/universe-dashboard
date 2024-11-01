@@ -6,6 +6,7 @@ let emptyCamera: Camera = {
     _id: '',
     name: '',
     location: '',
+    locationText: '',
     url: '',
     threshold: 0,
 };
@@ -37,6 +38,35 @@ export async function getAllCameras() {
         }
     }
 }
+
+export async function getCameras(regex: string) {
+    let isConnected = false;
+    try {
+        await client.connect();
+        isConnected = true;
+        const cameras = client.db('galaxy').collection('cameras');
+        let result = await cameras.find({"location": { "$regex": regex}}).toArray();
+        let aux: Camera[] = [];
+        for (let i = 0; i < result.length; i++) {
+            aux.push({ ...emptyCamera });
+        }
+        for (let i = 0; i < result.length; i++) {
+            aux[i]._id = String(result[i]._id);
+            aux[i].name = result[i].name;
+            aux[i].url = result[i].url;
+            aux[i].location = result[i].location;
+            aux[i].threshold = result[i].threshold;
+        }
+        return aux;
+    } catch (error) {
+        console.error('Error connecting to the database', error);
+    } finally {
+        if (isConnected) {
+            await client.close();
+        }
+    }
+}
+
 export async function getCameraById(id: string) {
     let isConnected = false;
     try {
@@ -138,4 +168,31 @@ export async function getAllLocations(): Promise<string[]> {
         const cameras = client.db('galaxy').collection('cameras');
         return await cameras.distinct('location');
     });
+}
+
+interface Location {
+    location: string;
+    locationText: string;
+}
+
+export async function getLocations(regex :string): Promise<Location[]> {
+    // return array of pair of location and locationText
+    // example [["location1", "location1Text"], ["location2", "location2Text"]]
+    // aggregate is used to group by location and locationText
+    return client.connect().then(async () => {
+        const cameras = client.db('galaxy').collection('cameras');
+        return await cameras.aggregate([
+            {
+                $match: {
+                    location: { $regex: regex },
+                },
+            },
+            {
+                $group: {
+                    _id: { location: '$location', locationText: '$locationText' },
+                },
+            },
+        ]).toArray().then((result) => result.map((r) => { return { location: r._id.location, locationText: r._id.locationText }; }));
+    });
+
 }
