@@ -227,8 +227,9 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                                     outputUrl +
                                     '/' +
                                     cameraLocation.location +
-                                    '_latest.jpg?' +
-                                    new Date().toISOString()
+                                    '_' +
+                                    occupancyData.getAllCurrentOccupancyData()._id +
+                                    '.jpg'
                                 }
                                 alt='output'
                                 className='w-full h-full object-cover'
