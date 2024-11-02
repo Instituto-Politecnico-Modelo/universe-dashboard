@@ -9,13 +9,15 @@ export const getLatestForAllCameras = (): Promise<OccupancyBatch> =>
         // this function should find the latest batch and return it with the data for all associated snaps
 
         // find latest batch_id from latest snap
+        /*
         const batch_id = await snapsCollection
             .findOne({ personas: { $exists: true } }, { sort: { timestamp: -1 } })
             .then((snap) => snap?.batch_id);
+            */
 
         // find the batch
-        const batch = await batchesCollection.findOne({ _id: batch_id });
-        const snaps = await snapsCollection.find({ batch_id, personas: { $exists: true } }).toArray();
+        const batch = await batchesCollection.findOne({ personas: { $exists: true }  }, { sort: { timestamp: -1 } });
+        const snaps = await snapsCollection.find({ batch_id: batch?._id, personas: { $exists: true } }).toArray();
         const cameras = await camerasCollection.find().toArray();
 
         return {

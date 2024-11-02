@@ -10,6 +10,7 @@ export const getAnnouncements = async (target: string): Promise<Announcement[] >
             start: { $lte: new Date() },
             end: { $gte: new Date() },
          }).toArray();
+        console.log(result);
         return result.map((announcement) => ({
             ...announcement,
             _id: announcement._id.toString(),

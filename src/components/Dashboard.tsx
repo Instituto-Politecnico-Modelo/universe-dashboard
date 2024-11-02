@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import ChartJS from 'chart.js/auto';
 import { Kanit, Rajdhani } from 'next/font/google';
 import { Skeleton } from 'primereact/skeleton';
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { Doughnut, Line, getElementAtEvent } from 'react-chartjs-2';
 import AnnouncementMarquee from './AnnouncementMarquee';
 import Clock from './Clock';
@@ -34,7 +34,11 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
     const occupancyData = useOccupancyData();
     const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
-        queryFn: async () => await getLatestForAllCameras(),
+        queryFn: async () => {
+            const maxBatch = await getMaxBatchPersonas('1p');
+            occupancyData.setMaxOccupancy(maxBatch);
+            return await getLatestForAllCameras();
+        },
         refetchOnWindowFocus: true,
         refetchInterval: 30000,
     });
@@ -53,14 +57,7 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
             const ret = await getBatchesSince(date);
             return ret;
         },
-        refetchInterval: 30000,
-        refetchOnReconnect: true,
-    });
-
-    const maxPersonasQuery = useQuery({
-        queryKey: ['maxPersonas'],
-        queryFn: async () => await getMaxBatchPersonas('1p'),
-        refetchInterval: 50000,
+        // refetchInterval: 30000,
         refetchOnReconnect: true,
     });
 
@@ -107,6 +104,13 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
         if (historicalDataQuery.data) occupancyData.setOccupancyData(historicalDataQuery.data);
     }, [historicalDataQuery.data]);
 
+    const [announcements, setAnnouncements] = useState([]);
+
+    useEffect(() => {
+        if (announcementQuery.data) {
+            setAnnouncements(repeatArray(announcementQuery.data, 7));
+        }
+    }, [announcementQuery.data]);
     if (isLoading) {
         return (
             <div className='centered text-4xl h-full w-full content-center'>
@@ -134,7 +138,7 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
         occupancyData.setSelectedBatch(data);
     };
 
-    const announcements = announcementQuery.isLoading ? [] : repeatArray(announcementQuery.data, 7);
+    //    const announcements = announcementQuery.isLoading ? [] : repeatArray(announcementQuery.data, 7);
 
     return (
         <>
@@ -174,14 +178,10 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
 
                         {/* top left showing max occupancy for 1p */}
                         <div className='absolute top-0 left-0 text-white rounded-tl-md rounded-br-md p-2 bg-red-700 text-2xl bold'>
-                            {maxPersonasQuery.isLoading ? (
-                                <Skeleton width='100%' height='100%' />
-                            ) : (
-                                <div className='flex'>
-                                    MAX: {maxPersonasQuery.data}
-                                    <img src='/person.svg' alt='person' className='h-8 w-8' />
-                                </div>
-                            )}
+                            <div className='flex'>
+                                MAX: {occupancyData.maxOccupancy}{' '}
+                                <img src='/person.svg' alt='person' className='h-8 w-8' />
+                            </div>
                         </div>
 
                         {/* text overlay on top right 
@@ -228,7 +228,9 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                                     '/' +
                                     cameraLocation.location +
                                     '_' +
-                                    occupancyData.getAllCurrentOccupancyData()._id +
+                                    (occupancyData.selectedBatch
+                                        ? occupancyData.selectedBatch?._id
+                                        : occupancyData.getAllCurrentOccupancyData()._id) +
                                     '.jpg'
                                 }
                                 alt='output'

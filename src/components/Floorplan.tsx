@@ -102,10 +102,10 @@ export function MeshComponent({
             // get the most distant point of the frame to the center as a reference
             // the closer to the center, the bigger the scale
             const scaledOcupancy = occupancy / threshold;
-            const minScale = 0.0;
+            const minScale = occupancy === 0 ? 0 : 0.05;
             const maxScale = 1;
             const XScale = minScale + (maxScale - minScale) * (1 - distanceToCenter / maxDistance) * scaledOcupancy;
-            const newXScale = XScale < 0.001 ? 0 : XScale;
+            const newXScale = XScale < 0.05 ? 0 : XScale;
 
             const YScale = Math.pow(0.2, -Math.abs((1 - distanceToCenter / maxDistance) * scaledOcupancy));
             const newYScale = YScale - 1;
