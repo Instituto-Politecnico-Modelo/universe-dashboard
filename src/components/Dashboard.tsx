@@ -241,12 +241,18 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                         <div className='absolute bottom-0 left-0 text-white rounded-bl-md rounded-tr-md p-2 bg-sky-700 text-2xl bold'>
                             <div className='flex'>
                                 {occupancyData.selectedBatch
-                                    ? occupancyData.selectedBatch.data.find(
-                                          (d) => d.location === cameraLocation.location,
-                                      ).personas
+                                    ? occupancyData.selectedBatch.data.reduce(
+                                          (acc, curr) =>
+                                              curr.location === cameraLocation.location ? curr.personas : acc,
+                                          0,
+                                      )
                                     : occupancyData
                                           .getAllCurrentOccupancyData()
-                                          .data.find((d) => d.location === cameraLocation.location)?.personas}{' '}
+                                          .data.reduce(
+                                              (acc, curr) =>
+                                                  curr.location === cameraLocation.location ? curr.personas : acc,
+                                              0,
+                                          )}{' '}
                                 <img src='/person.svg' alt='person' className='h-8 w-8' />
                             </div>
                         </div>
