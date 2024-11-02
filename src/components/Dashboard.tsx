@@ -35,7 +35,7 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
     const { isError, isLoading, error, data } = useQuery({
         queryKey: ['currentData'],
         queryFn: async () => {
-            const maxBatch = await getMaxBatchPersonas('1p');
+            const maxBatch = await getMaxBatchPersonas('pb');
             occupancyData.setMaxOccupancy(maxBatch);
             return await getLatestForAllCameras();
         },
@@ -169,8 +169,8 @@ function Content({ outputUrl, regex }: { outputUrl: string; regex: string }) {
                                 {
                                     /*total occupancy*/
                                     occupancyData.selectedBatch
-                                        ? occupancyData.selectedBatch.personas_1p
-                                        : occupancyData.getAllCurrentOccupancyData().personas_1p
+                                        ? occupancyData.selectedBatch.personas_pb
+                                        : occupancyData.getAllCurrentOccupancyData().personas_pb
                                 }{' '}
                                 <img src='/person.svg' alt='person' className='h-8 w-8' />
                             </div>
@@ -360,7 +360,7 @@ function historicalChartData(batch: OccupancyBatch[]) {
         datasets: [
             {
                 label: 'Ocupación total',
-                data: batch.toReversed().map((d) => d.personas_1p),
+                data: batch.toReversed().map((d) => d.personas_pb),
                 backgroundColor: ['#7dd3fc'],
                 borderColor: '#0369a1',
                 tension: 0.4,
